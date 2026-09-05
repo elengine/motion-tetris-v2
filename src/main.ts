@@ -117,10 +117,14 @@ function tick(dt: number): void {
     handleRepeat(dt);
     processEvents();
   }
-  // 回転アニメ補間
-  if (Math.abs(rotTarget - rotAnim) > 0.01) {
+  // 回転アニメ補間（偏差ベース: 常に既定角度0から±90°以内で補間し、連打時に累積しない）
+  const dev = rotTarget - rotAnim;
+  if (Math.abs(dev) > 0.01) {
     const k = Math.min(1, dt / 90);
-    rotAnim += (rotTarget - rotAnim) * k;
+    rotAnim += dev * k;
+    if (Math.abs(rotTarget - rotAnim) <= 0.01) rotAnim = rotTarget;
+    // 累積防止: 180°以上の偏差は即時確定（視覚の多重回転を防ぐ）
+    if (Math.abs(rotTarget - rotAnim) > Math.PI * 0.9) rotAnim = rotTarget - Math.sign(rotTarget - rotAnim) * Math.PI / 2;
   } else rotAnim = rotTarget;
 
   const fx = { rotOffset: rotAnim, pivotX, pivotY, clearRows: [] as any, flashAlpha: 0 };
@@ -263,16 +267,19 @@ function handleRepeat(dt: number): void {
 function beginRotate(dir: 1 | -1): void {
   if (!game) return;
   // 回転前の重心 → ピボット保持
-  const cells = game.currentCells() as { x: number; y: number }[];
-  if (cells.length) {
-    pivotX = cells.reduce((s, c) => s + c.x, 0) / cells.length - 0.0;
-    pivotY = cells.reduce((s, c) => s + c.y, 0) / cells.length - 0.0;
+  prevCells = game.currentCells() as { x: number; y: number }[];
+  if (prevCells.length) {
+    pivotX = prevCells.reduce((s, c) => s + c.x, 0) / prevCells.length - 0.0;
+    pivotY = prevCells.reduce((s, c) => s + c.y, 0) / prevCells.length - 0.0;
   }
   if (game.rotate(dir)) {
-    rotTarget += dir * Math.PI / 2;
+    rotTarget = rotAnim + dir * Math.PI / 2; // 偏差基準（累積しない）
     sound.play('rotate');
   }
 }
+
+// 回転アニメ中の「前のセル位置」を保持（描画は旧位置→新位置の補間に固定し、落下方向が回って見えるのを防ぐ）
+let prevCells: { x: number; y: number }[] | null = null;
 
 // pivot は回転時に都度計算するため不要
 

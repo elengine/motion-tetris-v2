@@ -145,13 +145,16 @@ export class Renderer {
         drawBlock(ctx, px, py, l.cell, def, 0.18);
       }
       // 現在ピース（スムース回転オフセット）
-      const rotOff = fx.rotOffset;
+      // 偏差は ±90° 以内に正規化し、重力（落下）方向が回って見えないよう
+      // 盤面Y軸は常に下向き固定のまま、セル位置のみを重心まわりで回す。
+      let rotOff = fx.rotOffset;
+      // 偏差を [-PI/2, PI/2] に正規化（180°見た目回転・落下方向が回るのを防ぐ回帰修正）
+      rotOff = ((rotOff + Math.PI / 2) % (Math.PI) + Math.PI) % Math.PI - Math.PI / 2;
       for (const c of cells) {
         const { px, py } = cellToPx(l, c.x, c.y);
-        if (c.y < HIDDEN_ROWS - 1) continue;
+        if (c.y < HIDDEN_ROWS) continue;
         let ax = px, ay = py;
         if (Math.abs(rotOff) > 0.01) {
-          // ピボット（ピース重心）周りに回転
           const cxp = l.boardX + ((fx.pivotX) + 0.5) * l.cell;
           const cyp = l.boardY + (fx.pivotY - HIDDEN_ROWS + 0.5) * l.cell;
           const cos = Math.cos(rotOff), sin = Math.sin(rotOff);
