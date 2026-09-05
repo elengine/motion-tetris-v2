@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0a0e27" />
+    <title>NEON TETRIS v2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Noto+Sans+JP:wght@500;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="app"></div>
+
+    <!-- HUD オーバーレイ -->
+    <div id="hud" class="hud">
+      <div class="glass-card hud-score">
+        <span class="hud-label">SCORE</span>
+        <span id="hud-score" class="hud-value">0</span>
+      </div>
+      <div class="glass-card hud-mini">
+        <span class="hud-label">LV</span>
+        <span id="hud-level" class="hud-value">1</span>
+      </div>
+      <div class="glass-card hud-mini">
+        <span class="hud-label">LINES</span>
+        <span id="hud-lines" class="hud-value">0</span>
+      </div>
+      <div class="glass-card hud-mini">
+        <span class="hud-label">BEST</span>
+        <span id="hud-best" class="hud-value">-</span>
+      </div>
+    </div>
+
+    <!-- NEXT / HOLD パネル -->
+    <div id="panels">
+      <div class="glass-card side-panel">
+        <span class="hud-label">NEXT</span>
+        <canvas id="next-canvas" width="120" height="240"></canvas>
+      </div>
+      <div class="glass-card side-panel">
+        <span class="hud-label">HOLD</span>
+        <canvas id="hold-canvas" width="120" height="90"></canvas>
+      </div>
+    </div>
+
+    <button id="pause-btn" class="icon-btn" aria-label="ポーズ">⏸</button>
+    <button id="mute-btn" class="icon-btn mute" aria-label="ミュート">🔊</button>
+
+    <!-- タッチ操作 -->
+    <div id="touchpad">
+      <button class="tc" data-action="left">◀</button>
+      <button class="tc tc-acc" data-action="rotate-ccw">⇄</button>
+      <button class="tc tc-acc" data-action="rotate-cw">⟳</button>
+      <button class="tc" data-action="right">▶</button>
+      <button class="tc" data-action="soft">▼</button>
+      <button class="tc tc-drop" data-action="drop">⤓</button>
+      <button class="tc tc-acc" data-action="hold">H</button>
+    </div>
+
+    <!-- オーバーレイ（タイトル/ポーズ/ゲームオーバー共用） -->
+    <div id="overlay">
+      <div class="overlay-card">
+        <h1 id="ov-title" class="neon-title">NEON<br />TETRIS</h1>
+        <p id="ov-sub" class="ov-sub">2026 強化版・ネオン×ガラスモーフィズム</p>
+        <div id="ov-body" class="ov-body"></div>
+        <button id="ov-action" class="cta-btn">はじめる</button>
+        <a id="v1-link" class="v1-link" href="https://elengine.github.io/motion-tetris/" target="_blank" rel="noopener">
+          🎮 旧バージョン（v1）でも遊ぶ →
+        </a>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
