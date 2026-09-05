@@ -1,21 +1,28 @@
 import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
 import { VitePWA } from 'vite-plugin-pwa';
+import wasm from 'vite-plugin-wasm';
+import topAwait from 'vite-plugin-top-level-await';
 
 export default defineConfig({
   base: './',
+  resolve: {
+    alias: {
+      '@wasm': fileURLToPath(new URL('./wasm/pkg', import.meta.url)),
+    },
+  },
   build: { target: 'es2022', sourcemap: false },
   server: { host: true },
-  test: { include: ['tests/**/*.test.ts'], environment: 'node' },
   plugins: [
+    wasm(),
+    topAwait(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/*.png'],
       manifest: {
         name: 'NEON TETRIS v2',
         short_name: 'NEONテトリス',
-        description: 'ネオン×ガラスモーフィズムで演出強化したテトリス（2026年版）',
+        description: 'Wasmコア×ガイドライン完全準拠の本格テトリス',
         start_url: './',
-        scope: './',
         display: 'standalone',
         orientation: 'any',
         background_color: '#0a0e27',
@@ -24,7 +31,6 @@ export default defineConfig({
         icons: [
           { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icons/maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

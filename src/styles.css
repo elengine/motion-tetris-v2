@@ -24,6 +24,7 @@ html, body {
 }
 #app { position: fixed; inset: 0; height: 100dvh; }
 #app canvas { display: block; }
+#game-canvas { width: 100%; height: 100%; touch-action: none; }
 
 /* ---------- ガラスカード ---------- */
 .glass-card {
@@ -194,3 +195,25 @@ html, body {
   padding-bottom: 2px;
 }
 .v1-link:active { opacity: 0.7; }
+
+/* ---------- HUD stats 組み合わせ ---------- */
+.hud .stat {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  padding: 5px 10px;
+  min-width: 64px;
+}
+.side-panel {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+}
+
+.panel-title { font-size: 10px; letter-spacing: 0.18em; margin: 0 0 4px; color: var(--muted); font-weight: 800; }
+.mode-select { color: var(--text); padding: 6px 10px; font-size: 12px; }
+.v1-link { font-size: 11px; color: var(--muted); text-align: center; }

@@ -11,72 +11,61 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Noto+Sans+JP:wght@500;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap"
       rel="stylesheet"
     />
+    <link rel="icon" href="./icons/icon-192.png" />
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <canvas id="game-canvas"></canvas>
 
-    <!-- HUD オーバーレイ -->
-    <div id="hud" class="hud">
-      <div class="glass-card hud-score">
-        <span class="hud-label">SCORE</span>
-        <span id="hud-score" class="hud-value">0</span>
+      <div id="hud" class="hud">
+        <div class="stat hud-mini"><span class="hud-label">SCORE</span><span id="hud-score" class="hud-value">0</span></div>
+        <div class="stat hud-mini"><span class="hud-label">LEVEL</span><span id="hud-level" class="hud-value">1</span></div>
+        <div class="stat hud-mini"><span class="hud-label">LINES</span><span id="hud-lines" class="hud-value">0</span></div>
+        <div class="stat hud-mini"><span class="hud-label">TIME</span><span id="hud-time" class="hud-value">00:00</span></div>
+        <div class="stat hud-mini"><span class="hud-label">BEST</span><span id="hud-best" class="hud-value">-</span></div>
+        <div class="btns">
+          <button id="pause-btn" class="mini-btn">⏸</button>
+          <button id="mute-btn" class="mini-btn">🔊</button>
+        </div>
       </div>
-      <div class="glass-card hud-mini">
-        <span class="hud-label">LV</span>
-        <span id="hud-level" class="hud-value">1</span>
+
+      <div id="panels">
+        <aside class="glass-card side-panel">
+          <h3 class="panel-title">NEXT</h3>
+          <canvas id="next-canvas" width="120" height="192"></canvas>
+        </aside>
+        <aside class="glass-card side-panel">
+          <h3 class="panel-title">HOLD</h3>
+          <canvas id="hold-canvas" width="120" height="64"></canvas>
+        </aside>
+        <select id="mode-select" class="glass-card mode-select">
+          <option value="marathon">マラソン</option>
+          <option value="sprint">スプリント 40L</option>
+          <option value="ultra">ウルトラ 2分</option>
+        </select>
+        <a class="v1-link" href="https://elengine.github.io/motion-tetris/" target="_blank" rel="noopener">旧バージョン (v1) でも遊ぶ →</a>
       </div>
-      <div class="glass-card hud-mini">
-        <span class="hud-label">LINES</span>
-        <span id="hud-lines" class="hud-value">0</span>
+
+      <div id="touchpad">
+        <button class="tc" data-action="left">◀</button>
+        <button class="tc" data-action="rot-ccw">↺</button>
+        <button class="tc" data-action="rot-cw">↻</button>
+        <button class="tc" data-action="right">▶</button>
+        <button class="tc" data-action="soft">▼</button>
+        <button class="tc" data-action="drop">⇓</button>
+        <button class="tc" data-action="hold">H</button>
       </div>
-      <div class="glass-card hud-mini">
-        <span class="hud-label">BEST</span>
-        <span id="hud-best" class="hud-value">-</span>
+
+      <div id="overlay">
+        <h1 id="ov-title" class="neon-title">NEON TETRIS</h1>
+        <p id="ov-sub"></p>
+        <div id="ov-body"></div>
+        <button id="ov-action">はじめる</button>
       </div>
     </div>
-
-    <!-- NEXT / HOLD パネル -->
-    <div id="panels">
-      <div class="glass-card side-panel">
-        <span class="hud-label">NEXT</span>
-        <canvas id="next-canvas" width="120" height="240"></canvas>
-      </div>
-      <div class="glass-card side-panel">
-        <span class="hud-label">HOLD</span>
-        <canvas id="hold-canvas" width="120" height="90"></canvas>
-      </div>
-    </div>
-
-    <button id="pause-btn" class="icon-btn" aria-label="ポーズ">⏸</button>
-    <button id="mute-btn" class="icon-btn mute" aria-label="ミュート">🔊</button>
-
-    <!-- タッチ操作 -->
-    <div id="touchpad">
-      <button class="tc" data-action="left">◀</button>
-      <button class="tc tc-acc" data-action="rotate-ccw">⇄</button>
-      <button class="tc tc-acc" data-action="rotate-cw">⟳</button>
-      <button class="tc" data-action="right">▶</button>
-      <button class="tc" data-action="soft">▼</button>
-      <button class="tc tc-drop" data-action="drop">⤓</button>
-      <button class="tc tc-acc" data-action="hold">H</button>
-    </div>
-
-    <!-- オーバーレイ（タイトル/ポーズ/ゲームオーバー共用） -->
-    <div id="overlay">
-      <div class="overlay-card">
-        <h1 id="ov-title" class="neon-title">NEON<br />TETRIS</h1>
-        <p id="ov-sub" class="ov-sub">2026 強化版・ネオン×ガラスモーフィズム</p>
-        <div id="ov-body" class="ov-body"></div>
-        <button id="ov-action" class="cta-btn">はじめる</button>
-        <a id="v1-link" class="v1-link" href="https://elengine.github.io/motion-tetris/" target="_blank" rel="noopener">
-          🎮 旧バージョン（v1）でも遊ぶ →
-        </a>
-      </div>
-    </div>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
