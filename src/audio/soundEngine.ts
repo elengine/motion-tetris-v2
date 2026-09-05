@@ -83,6 +83,7 @@ export class SoundEngine {
   }
 
   play(name: SfxName): void {
+    if (typeof (window as any) !== 'undefined' && (window as any).__sfxLog) (window as any).__sfxLog.push(name);
     if (!this.ctx || this.muted) return;
     switch (name) {
       case 'move': this.tone(220, 0.05, 'square', 0.1); break;

@@ -23,8 +23,8 @@ describe('回転アニメ偏差（上スワイプ180°/落下方向バグの回�
   });
 
   it('最大偏差はちょうど90°であり、決して180°にならない', () => {
-    expect(offsetAt(1, 0)).toBeCloseTo(HALF);
-    expect(offsetAt(-1, 0)).toBeCloseTo(-HALF);
+    expect(offsetAt(1, 0)).toBeCloseTo(-HALF);
+    expect(offsetAt(-1, 0)).toBeCloseTo(HALF);
     // 絶対値が 90° を超える状態は存在しない
     for (let k = 0; k <= 1; k += 0.001) {
       expect(Math.abs(offsetAt(1, k))).toBeLessThanOrEqual(HALF + 1e-9);
@@ -39,28 +39,30 @@ describe('回転アニメ偏差（上スワイプ180°/落下方向バグの回�
     for (let n = 0; n < 100; n++) {
       off = onNewRotation(off, 1);
       expect(Math.abs(off)).toBeLessThanOrEqual(HALF + 1e-9);
-      expect(off).toBeCloseTo(HALF);
+      expect(off).toBeCloseTo(-HALF);
     }
   });
 
   it('アニメ完了時（k=1）は偏差0 = 論理回転位置と一致（落下方向は常に下）', () => {
-    expect(offsetAt(1, 1)).toBe(0);
-    expect(offsetAt(-1, 1)).toBeCloseTo(0);
+    expect(offsetAt(1, 1)).toBeCloseTo(0, 12);
+    expect(offsetAt(-1, 1)).toBeCloseTo(0, 12);
   });
 
   it('偏差の向きは回転方向と一致（落下方向が反転しない）', () => {
-    // 時計回り(dir=+1)の偏差は常に正、反時計は常に負 — 折り返し反転なし
-    expect(offsetAt(1, 0.5)).toBeGreaterThan(0);
-    expect(offsetAt(1, 0.25)).toBeGreaterThan(0);
-    expect(offsetAt(-1, 0.5)).toBeLessThan(0);
-    expect(offsetAt(-1, 0.25)).toBeLessThan(0);
+    // 回帰 1545831423506645023: 視覚回転方向は論理回転方向と一致させる。
+    // Canvas座標（y下向き）では 時計(dir=+1) = 負の偏差、反時計 = 正の偏差。
+    expect(offsetAt(1, 0.5)).toBeLessThan(0);
+    expect(offsetAt(1, 0.25)).toBeLessThan(0);
+    expect(offsetAt(-1, 0.5)).toBeGreaterThan(0);
+    expect(offsetAt(-1, 0.25)).toBeGreaterThan(0);
   });
 
-  it('偏差は k に対して単調減衰（途中で向きが変わらない）', () => {
+  it('偏差は k に対して単調に0へ収束（途中で向きが変わらない）', () => {
+    // dir=+1（時計）: 偏差は -90° → 0 へ単調増加（絶対値は単調減衰）
     let prev = offsetAt(1, 0);
     for (let k = 0.01; k <= 1; k += 0.01) {
       const cur = offsetAt(1, k);
-      expect(cur).toBeLessThanOrEqual(prev + 1e-12);
+      expect(Math.abs(cur)).toBeLessThanOrEqual(Math.abs(prev) + 1e-12);
       prev = cur;
     }
   });

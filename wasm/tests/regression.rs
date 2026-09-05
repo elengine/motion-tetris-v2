@@ -199,3 +199,27 @@ fn t98_dbg2() {
     g.hard_drop();
     println!("state={:?} after {}", g.state, g.get_grid());
 }
+
+#[test]
+// 回帰（2026-09-05 要望）: 自然落下で位置が確定したとき action "lock" のイベントが出る
+fn t15_natural_lock_emits_lock_event() {
+    let mut g = Game::new(7); g.start_game(GameMode::Marathon, 7);
+    // 落下間隔をまたぐまで tick
+    for _ in 0..3000 {
+        g.tick(16);
+        // 接地判定は内部。lock_acc>=500 が1010ms程度で成立
+    }
+    assert!(g.score_s() >= 0);
+    let acts = g.drain_actions();
+    assert!(acts.iter().any(|a| a == "lock"), "natural lock must emit 'lock' action, got: {:?}", acts);
+}
+
+#[test]
+// 回帰（2026-09-05 要望）: hard_drop による確定は action "lock" を出さない（hard 音のダブり防止）
+fn t16_hard_drop_not_lock_event() {
+    let mut g = Game::new(11); g.start_game(GameMode::Marathon, 11);
+    g.hard_drop();
+    // hard_drop は即 lock() するが last_lock_natural=false → 'lock' action は出ない（hard 音とダブル防止）
+    let acts = g.drain_actions();
+    assert!(!acts.iter().any(|a| a == "lock"), "hard drop must NOT emit 'lock' action, got: {:?}", acts);
+}

@@ -86,6 +86,7 @@ pub struct Game {
     pub state: GameState,
 
     cur: Option<PieceType>, cur_rot: u8, cur_x: i32, cur_y: i32,
+    last_lock_natural: bool,
     queue: Vec<PieceType>, bag: Vec<PieceType>,
     hold: Option<PieceType>, hold_locked: bool,
     score: i64, lines: u32, level: u32, combo: i32, b2b: bool,
@@ -137,6 +138,7 @@ impl Game {
             rng: seed | 1,
             mode: GameMode::Marathon, state: GameState::Title,
             cur: None, cur_rot: 0, cur_x: 3, cur_y: 0,
+            last_lock_natural: false,
             queue: Vec::with_capacity(5), bag: Vec::with_capacity(7),
             hold: None, hold_locked: false,
             score: 0, lines: 0, level: 1, combo: -1, b2b: false,
@@ -382,6 +384,10 @@ impl Game {
             (0, 1) => "single".into(), (0, 2) => "double".into(), (0, 3) => "triple".into(), (0, 4) => "tetris".into(),
             _ => String::new(),
         };
+        if ev.action.is_empty() && self.last_lock_natural && cleared == 0 && tspin == 0 {
+            ev.action = "lock".into(); // 自然落下確定（回帰: 確定音 — hard drop とは別扱い）
+        }
+        self.last_lock_natural = false;
         self.events.push(ev);
         self.spawn();
     }
@@ -400,7 +406,7 @@ impl Game {
         // ロックディレイ
         if self.grounded() {
             self.lock_acc += dt;
-            if self.lock_acc >= 500 { self.lock(); }
+            if self.lock_acc >= 500 { self.last_lock_natural = true; self.lock(); }
             return;
         }
         self.lock_acc = 0;
@@ -451,6 +457,17 @@ impl Game {
     pub fn pop_events(&mut self) -> JsValue {
         let evs = std::mem::take(&mut self.events);
         serde_wasm_bindgen::to_value(&evs).unwrap_or(JsValue::NULL)
+    }
+    #[wasm_bindgen(js_name = lastActions)]
+    pub fn last_actions(&self) -> Vec<String> {
+        self.events.iter().map(|e| e.action.clone()).collect()
+    }
+
+    #[wasm_bindgen(js_name = drainActions)]
+    pub fn drain_actions(&mut self) -> Vec<String> {
+        let acts: Vec<String> = self.events.iter().map(|e| e.action.clone()).collect();
+        self.events.clear();
+        acts
     }
 
     #[wasm_bindgen(getter, js_name = combo)] pub fn combo_s(&self) -> i32 { self.combo }

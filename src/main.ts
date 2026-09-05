@@ -31,6 +31,7 @@ const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
 
 // ----- 状態 -----
 const sound = new SoundEngine();
+(window as any).__sfxLog = []; // sfx ログは SoundEngine.play 内で push される（テスト/検証用）
 let renderer: Renderer;
 let game: Game | null = null;
 let running = false;
@@ -163,6 +164,7 @@ function processEvents(): void {
   if (!Array.isArray(evs)) return;
   for (const ev of evs) {
     if (ev.action === 'gameover') { gameOver(); continue; }
+    if (ev.action === 'lock') { sound.play('lock'); continue; } // 自然落下で位置が確定した時の効果音（回帰修正）
     audioOnClear(ev);
   }
 }

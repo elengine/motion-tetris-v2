@@ -16,15 +16,20 @@
  *   - offset はアニメ進行 k∈[0,1] に対し dir*(1-k)*π/2 で 0 へ単調減衰
  */
 
-/** アニメ開始時の初期偏差（dir: +1=時計, -1=反時計） */
+/**
+ * アニメ開始時の初期偏差（dir: +1=時計, -1=反時計）
+ * 回帰修正 2026-09-05: Canvas座標（y下向き）では負の角度=時計回り。
+ * 論理が時計回りに進む (curRot +1) とき、見た目も時計回りに回り込ませるには
+ * 偏差は「旧位置から見て -90°」で開始し 0 へ減衰させる。
+ */
 export function initialOffset(dir: 1 | -1): number {
-  return dir * (Math.PI / 2);
+  return -dir * (Math.PI / 2);
 }
 
 /** アニメ経過 k (0..1) に対する表示偏差。k>=1 で 0（アニメ完了=論理位置と一致） */
 export function offsetAt(dir: 1 | -1, k: number): number {
   const kk = Math.max(0, Math.min(1, k));
-  return dir * (1 - kk) * (Math.PI / 2);
+  return -dir * (1 - kk) * (Math.PI / 2);
 }
 
 /** 連打時: 新しい回転が入ったら偏差は「新規90°分」で上書き（累積しない） */

@@ -15,6 +15,7 @@ export class Game {
     currentCells(): any;
     currentPiece(): PieceType | undefined;
     do_hold(): boolean;
+    drainActions(): string[];
     getCurrent(): any;
     /**
      * 盤面を文字列で返す（"I..T..." × 22行）
@@ -26,6 +27,7 @@ export class Game {
     ghost_y_internal(): number;
     grounded(): boolean;
     hard_drop(): void;
+    lastActions(): string[];
     move_h(dx: number): boolean;
     constructor(seed: bigint);
     pause_toggle(): void;
@@ -95,6 +97,7 @@ export interface InitOutput {
     readonly game_currentCells: (a: number) => any;
     readonly game_currentPiece: (a: number) => number;
     readonly game_do_hold: (a: number) => number;
+    readonly game_drainActions: (a: number) => [number, number];
     readonly game_elapsedMs: (a: number) => bigint;
     readonly game_getCurrent: (a: number) => any;
     readonly game_getGrid: (a: number) => [number, number];
@@ -105,6 +108,7 @@ export interface InitOutput {
     readonly game_ghost_y_internal: (a: number) => number;
     readonly game_grounded: (a: number) => number;
     readonly game_hard_drop: (a: number) => void;
+    readonly game_lastActions: (a: number) => [number, number];
     readonly game_level: (a: number) => number;
     readonly game_lines: (a: number) => number;
     readonly game_move_h: (a: number, b: number) => number;
@@ -120,6 +124,7 @@ export interface InitOutput {
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
+    readonly __externref_drop_slice: (a: number, b: number) => void;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_start: () => void;
 }

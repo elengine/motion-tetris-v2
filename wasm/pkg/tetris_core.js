@@ -79,6 +79,15 @@ export class Game {
         return ret !== 0;
     }
     /**
+     * @returns {string[]}
+     */
+    drainActions() {
+        const ret = wasm.game_drainActions(this.__wbg_ptr);
+        var v1 = getArrayJsValueFromWasm0(ret[0], ret[1]);
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
+    }
+    /**
      * @returns {bigint}
      */
     get elapsedMs() {
@@ -154,6 +163,15 @@ export class Game {
     }
     hard_drop() {
         wasm.game_hard_drop(this.__wbg_ptr);
+    }
+    /**
+     * @returns {string[]}
+     */
+    lastActions() {
+        const ret = wasm.game_lastActions(this.__wbg_ptr);
+        var v1 = getArrayJsValueFromWasm0(ret[0], ret[1]);
+        wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+        return v1;
     }
     /**
      * @returns {number}
@@ -442,6 +460,17 @@ function debugString(val) {
     }
     // TODO we could test for more things here, like `Set`s and `Map`s.
     return className;
+}
+
+function getArrayJsValueFromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    const mem = getDataViewMemory0();
+    const result = [];
+    for (let i = ptr; i < ptr + 4 * len; i += 4) {
+        result.push(wasm.__wbindgen_externrefs.get(mem.getUint32(i, true)));
+    }
+    wasm.__externref_drop_slice(ptr, len);
+    return result;
 }
 
 let cachedDataViewMemory0 = null;
