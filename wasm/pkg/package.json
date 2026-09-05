@@ -1,0 +1,15 @@
+{
+  "name": "tetris-core",
+  "type": "module",
+  "version": "2.0.0",
+  "files": [
+    "tetris_core_bg.wasm",
+    "tetris_core.js",
+    "tetris_core.d.ts"
+  ],
+  "main": "tetris_core.js",
+  "types": "tetris_core.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
