@@ -25,6 +25,12 @@ export class TetrisStage {
   private textures = new Map<TetrominoType, Texture>();
   private lineClearAnims: { rows: number[]; t: number; sprites: Sprite[] }[] = [];
   private shakeTime = 0;
+  /** 回転アニメ: 実角度(回転状態×90°)と表示角度の補間 */
+  private displayAngle = 0; // 表示上の角度（deg）
+  private targetAngle = 0;  // 目標角度（deg、実回転状態に一致）
+  private piecePivotX = 0;  // 回転中心（盤面座標、浮動小数）
+  private piecePivotY = 0;
+  private prevRotation = 0;
 
   constructor(app: import('pixi.js').Application, game: Game) {
     this.app = app;
@@ -69,7 +75,7 @@ export class TetrisStage {
     }
   }
 
-  /** 現在ピースとゴーストを描画 */
+  /** 現在ピースとゴーストを描画（回転は90°スムース補間） */
   refreshPiece(): void {
     this.pieceLayer.removeChildren().forEach((c) => c.destroy());
     if (this.game.over) return;
@@ -96,21 +102,67 @@ export class TetrisStage {
         this.pieceLayer.addChild(sp);
       }
     }
+    // 現在ピース: 回転アニメ用に angle 補間 & ピボット回転
+    // rotation 変化を検知 → targetAngle 更新（カウンタ回転の連続性維持）
+    if (g.currentRotation !== this.prevRotation) {
+      const diff = g.currentRotation - this.prevRotation;
+      const step = ((diff % 4) + 4) % 4 === 3 ? -1 : ((diff % 4) + 4) % 4; // 1:CW, 3:CCW
+      this.targetAngle += step * 90;
+      this.prevRotation = g.currentRotation;
+      // ピボット = 現在位置＋回転セル重心
+      const gx0 = Math.min(...cells.map((q) => q[0]));
+      const gx1 = Math.max(...cells.map((q) => q[0]));
+      const gy0 = Math.min(...cells.map((q) => q[1]));
+      const gy1 = Math.max(...cells.map((q) => q[1]));
+      this.piecePivotX = g.currentX + (gx0 + gx1 + 1) / 2;
+      this.piecePivotY = g.currentY + (gy0 + gy1 + 1) / 2;
+    }
+    if (g.current !== this.lastPieceType) {
+      // 新ピース: 角度リセット（連続性の崩れ防止）
+      this.lastPieceType = g.current;
+      this.displayAngle = 0;
+      this.targetAngle = 0;
+      this.prevRotation = 0;
+    }
     // 現在ピース
+    const pivotScreenX = boardX + this.piecePivotX * cell;
+    const pivotScreenY = boardY + (this.piecePivotY - HIDDEN_ROWS) * cell;
     for (const [cx, cy] of cells) {
       const sy = g.currentY + cy - HIDDEN_ROWS;
       if (sy < -1) continue;
       const sp = new Sprite(this.textures.get(g.current)!);
       sp.scale.set(cell / 32);
+      sp.anchor.set(0);
       sp.position.set(boardX + (g.currentX + cx) * cell - pad, boardY + sy * cell - pad);
+      // ピボットまわりに表示角度を適用
+      const rad = (this.displayAngle * Math.PI) / 180;
+      const dx = sp.x + cell / 2 - pivotScreenX;
+      const dy = sp.y + cell / 2 - pivotScreenY;
+      sp.pivot.set(cell / 2, cell / 2);
+      sp.position.set(pivotScreenX + dx * Math.cos(rad) - dy * Math.sin(rad),
+        pivotScreenY + dx * Math.sin(rad) + dy * Math.cos(rad));
+      sp.rotation = rad;
       this.pieceLayer.addChild(sp);
     }
   }
 
-  /** フレーム更新（アニメーション進行・シェイク） */
+  private lastPieceType: TetrominoType | null = null;
+
+  /** フレーム更新（アニメ進行・シェイク・回転補間） */
   tick(dt: number): void {
     const fDt = this.app.ticker.deltaMS / 1000;
     void dt;
+    // 回転スムース補間（0.12秒で90°、exponent 的な追従）
+    if (Math.abs(this.targetAngle - this.displayAngle) > 0.5) {
+      const k = Math.min(1, fDt / 0.12 * 0.35);
+      this.displayAngle += (this.targetAngle - this.displayAngle) * k;
+    } else {
+      this.displayAngle = this.targetAngle;
+    }
+    // 補間中は描画更新
+    if (Math.abs(this.targetAngle - this.displayAngle) > 0.01) {
+      this.refreshPiece();
+    }
     // ライン消去アニメ
     for (let i = this.lineClearAnims.length - 1; i >= 0; i--) {
       const a = this.lineClearAnims[i];

@@ -14,6 +14,8 @@ export class Score {
   lines = 0;
   combo = -1; // 連続消去カウント。消去成功で+1、失敗でリセット
   private lastWasTetris = false;
+  /** 直近の消去がTスピンか（将来B2B拡張用に参照可） */
+  lastWasTSpin = false;
   /** applyLineClear でレベルが上がったか（消費後に読み取る） */
   private _levelChanged = false;
   get levelChanged(): boolean {
@@ -35,8 +37,23 @@ export class Score {
     this.score += dist * 2;
   }
 
-  /** ライン消去時のスコア加算・レベル進行。消去できるライン数を渡す */
-  applyLineClear(n: number): void {
+  /** ライン消去時のスコア加算・レベル進行。tspin: Tスピン状態 */
+  applyLineClear(n: number, tspin: 'none' | 'mini' | 'full' = 'none'): void {
+    // Tスpin
+    if (tspin !== 'none') {
+      this.lastWasTSpin = true;
+      //   mini single: 100, mini double: 200 / full single: 800, double: 1200, triple: 1600
+      const tspinBase = tspin === 'full' ? [0, 800, 1200, 1600, 0][Math.min(n, 3)] : [0, 100, 200][Math.min(n, 2)];
+      let gained = tspinBase * this.level;
+      // B2B (Tスピン → Tスピン、またはTetris → T-spin)
+      if (this.lastWasTetris && tspin === 'full') gained = Math.floor(gained * 1.5);
+      gained += this.comboBonusOnLineClear(n);
+      this.score += gained;
+      this.lines += n;
+      this.updateLevel();
+      return;
+    }
+
     const base = [0, 100, 300, 500, 800][Math.min(n, 4)];
     let gained = base * this.level;
 
@@ -50,10 +67,8 @@ export class Score {
 
     this.score += gained;
     this.lines += n;
-    // 10ライン毎にレベルアップ
-    const nextLevel = 1 + Math.floor(this.lines / 10);
-    this._levelChanged = nextLevel > this.level;
-    this.level = nextLevel;
+    this.lastWasTSpin = false;
+    this.updateLevel();
 
     if (isTetris) this.lastWasTetris = true;
     else if (n > 0) this.lastWasTetris = false;
@@ -61,6 +76,20 @@ export class Score {
       this.combo = -1;
       this.lastWasTetris = false;
     }
+  }
+
+  /** コンボボーナス。消去時のみ呼ばれる前提 */
+  private comboBonusOnLineClear(n: number): number {
+    if (n === 0) return 0;
+    this.combo++;
+    return this.combo > 0 ? 50 * this.combo * this.level : 0;
+  }
+
+  /** 10ライン毎にレベルアップ */
+  private updateLevel(): void {
+    const nextLevel = 1 + Math.floor(this.lines / 10);
+    this._levelChanged = nextLevel > this.level;
+    this.level = nextLevel;
   }
 
   /** 前回消去から連続しているか（コンボ状態） */

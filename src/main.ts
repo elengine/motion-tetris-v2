@@ -1,12 +1,10 @@
 import './styles.css';
-import { Application } from 'pixi.js';
-import { Graphics, Sprite, Container } from 'pixi.js';
+import { Application, Text, TextStyle } from 'pixi.js';
 import { Game } from './core/game';
 import { LocalStorageScoreStore } from './core/storage';
 import { AudioManager } from './audio/audioManager';
 import { TetrisStage } from './engine/stage';
-import { makeBlockTexture } from './engine/boardView';
-import { COLS, ROWS, HIDDEN_ROWS, TETROMINOES, TetrominoType } from './core/constants';
+import { TETROMINOES, TetrominoType } from './core/constants';
 
 // ----- DOM -----
 const appEl = document.getElementById('app')!;
@@ -65,6 +63,7 @@ async function init(): Promise<void> {
       stage.refreshPiece();
     }
     stage.tick(dtMs);
+    tickFloatTexts();
     updateHUD();
   });
 }
@@ -183,8 +182,16 @@ function onGameEvent(ev: string, data?: unknown): void {
       break;
     }
     case 'lineClear': {
-      const d = data as { rows: number; gained: number };
-      if (d.rows >= 4) {
+      const d = data as { rows: number; gained: number; tspin: 'none' | 'mini' | 'full' };
+      if (d.tspin !== 'none') {
+        // Tスピン演出
+        audio.play('tspin');
+        stage.shake(d.rows >= 2 ? 1.3 : 0.8);
+        const tspinLabel = d.tspin === 'full'
+          ? ['', 'T-SPIN SINGLE!', 'T-SPIN DOUBLE!!', 'T-SPIN TRIPLE!!!'][Math.min(d.rows, 3)]
+          : ['', 'T-SPIN MINI', 'T-SPIN MINI DOUBLE'][Math.min(d.rows, 2)];
+        floatText(tspinLabel, '#ff5ec8', 36);
+      } else if (d.rows >= 4) {
         stage.shake(1.4);
         floatText('TETRIS!', '#c86bff', 40);
       } else if (d.rows >= 2) {
@@ -200,6 +207,13 @@ function onGameEvent(ev: string, data?: unknown): void {
       drawMiniCanvases();
       break;
     }
+    case 'tspinNoLines': {
+      const d = data as { tspin: 'mini' | 'full'; gained: number };
+      audio.play('tspin');
+      floatText(d.tspin === 'full' ? 'T-SPIN!' : 'T-SPIN MINI', '#ff5ec8', 30);
+      drawMiniCanvases();
+      break;
+    }
     case 'hardDrop':
       audio.play('hard');
       break;
@@ -209,11 +223,23 @@ function onGameEvent(ev: string, data?: unknown): void {
   }
 }
 
-// 浮遊テキスト演出（簡易実装: stage 内 Desktop）
+// 浮遊テキスト演出（PixiJS Text、ボード中央でフェード＋上昇）
 function floatText(text: string, color: string, size: number): void {
   const { boardX, boardY, boardW, boardH } = stage.layout;
-  const t = new (window as any).PIXI_TEXT(text, color, size, boardX + boardW / 2, boardY + boardH * 0.35);
-  void t;
+  const label = new Text({
+    text,
+    style: new TextStyle({
+      fontFamily: 'Orbitron, sans-serif',
+      fontSize: size,
+      fill: color,
+      fontWeight: 'bold',
+      dropShadow: { color: color, blur: 12, distance: 0, alpha: 0.9 },
+    }),
+  });
+  label.anchor.set(0.5);
+  label.position.set(boardX + boardW / 2, boardY + boardH * 0.3);
+  stage.fxLayer.addChild(label);
+  floatAnims.push({ node: label, t: 0 });
 }
 
 // ----- 制御 -----
@@ -411,4 +437,18 @@ void init().then(() => {
   );
 });
 
-void COLS; void ROWS; void HIDDEN_ROWS; void Graphics; void Sprite; void Container; void makeBlockTexture;
+// 浮遊テキストのアニメ進行（stage.tick の後毎フレーム）
+const floatAnims: { node: Text; t: number }[] = [];
+function tickFloatTexts(): void {
+  for (let i = floatAnims.length - 1; i >= 0; i--) {
+    const a = floatAnims[i];
+    a.t += stage.app.ticker.deltaMS / 1000;
+    const p = Math.min(1, a.t / 1.1);
+    a.node.y -= stage.app.ticker.deltaMS * 0.035; // ゆっくり上昇
+    a.node.alpha = p < 0.15 ? p / 0.15 : 1 - (p - 0.15) / 0.85;
+    if (p >= 1) {
+      a.node.destroy();
+      floatAnims.splice(i, 1);
+    }
+  }
+}
