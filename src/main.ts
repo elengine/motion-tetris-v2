@@ -8,6 +8,7 @@ import { loadCore, Game, GameMode, GameState } from './core/wasmCore';
 import { Renderer, cellToPx } from './engine/renderer';
 import { SoundEngine, SfxName } from './audio/soundEngine';
 import { PIECES, PieceType, COLS, ROWS, TOTAL_ROWS, HIDDEN_ROWS } from './core/pieces';
+import { initialOffset, offsetAt } from './engine/rotanim';
 
 // ----- DOM -----
 document.getElementById('app');
@@ -40,8 +41,9 @@ let bestScore = Number(localStorage.getItem('ntv2:best') || 0);
 interface FloatText { text: string; color: string; x: number; y: number; t: number; size: number }
 const floats: FloatText[] = [];
 const clearFx: { row: number; t: number }[] = [];
-let rotAnim = 0;        // 現在表示中の回転オフセット(rad)
-let rotTarget = 0;
+let rotAnimOffset = 0;  // 表示中の一時回転オフセット(rad) — 常に[-π/2,π/2]で累積しない
+let rotAnimDir = 1;     // 回転方向
+let rotAnimElapsed = 0; // 経過ms
 let pivotX = 0, pivotY = 0;
 
 // ----- 初期化 -----
@@ -117,17 +119,17 @@ function tick(dt: number): void {
     handleRepeat(dt);
     processEvents();
   }
-  // 回転アニメ補間（偏差ベース: 常に既定角度0から±90°以内で補間し、連打時に累積しない）
-  const dev = rotTarget - rotAnim;
-  if (Math.abs(dev) > 0.01) {
-    const k = Math.min(1, dt / 90);
-    rotAnim += dev * k;
-    if (Math.abs(rotTarget - rotAnim) <= 0.01) rotAnim = rotTarget;
-    // 累積防止: 180°以上の偏差は即時確定（視覚の多重回転を防ぐ）
-    if (Math.abs(rotTarget - rotAnim) > Math.PI * 0.9) rotAnim = rotTarget - Math.sign(rotTarget - rotAnim) * Math.PI / 2;
-  } else rotAnim = rotTarget;
+  // 回転アニメ補間: 偏差 rotAnimOffset を 90ms で 0 に減衰させる（旧回転状態→新状態へ見た目だけ回る）
+  if (Math.abs(rotAnimOffset) > 0.01) {
+    rotAnimElapsed += dt;
+    const k = Math.min(1, rotAnimElapsed / 90);
+    rotAnimOffset = offsetAt(rotAnimDir as 1 | -1, k);
+    if (k >= 1) { rotAnimOffset = 0; }
+  }
 
-  const fx = { rotOffset: rotAnim, pivotX, pivotY, clearRows: [] as any, flashAlpha: 0 };
+  const visualOffset = (rotAnimOffset + Math.PI) % (Math.PI * 2) - Math.PI; // [-π,π) 正規化（保険）
+  const fx = { rotOffset: visualOffset, pivotX, pivotY, clearRows: [] as any, flashAlpha: 0 };
+  (window as any).__debug = { rotAnim: visualOffset, rotTarget: game ? game.curRot : 0, curRot: game ? game.curRot : 0, curX: game ? game.curX : 0, curY: game ? game.curY : 0 };
   // ライン消去フラッシュ更新
   for (let i = clearFx.length - 1; i >= 0; i--) {
     clearFx[i].t += dt;
@@ -266,19 +268,21 @@ function handleRepeat(dt: number): void {
 /** 90°回転 + 表示アニメ開始 */
 function beginRotate(dir: 1 | -1): void {
   if (!game) return;
-  // 回転前の重心 → ピボット保持
   prevCells = game.currentCells() as { x: number; y: number }[];
   if (prevCells.length) {
-    pivotX = prevCells.reduce((s, c) => s + c.x, 0) / prevCells.length - 0.0;
-    pivotY = prevCells.reduce((s, c) => s + c.y, 0) / prevCells.length - 0.0;
+    pivotX = prevCells.reduce((s, c) => s + c.x, 0) / prevCells.length;
+    pivotY = prevCells.reduce((s, c) => s + c.y, 0) / prevCells.length;
   }
   if (game.rotate(dir)) {
-    rotTarget = rotAnim + dir * Math.PI / 2; // 偏差基準（累積しない）
+    // 偏差ベース: 常に「旧回転状態→新回転状態」の −90°〜+90° の一時補間のみ
+    rotAnimDir = dir;
+    rotAnimElapsed = 0;
+    rotAnimOffset = initialOffset(dir);
     sound.play('rotate');
   }
 }
 
-// 回転アニメ中の「前のセル位置」を保持（描画は旧位置→新位置の補間に固定し、落下方向が回って見えるのを防ぐ）
+// 回転アニメ中の「前のセル位置」を保持（描画は旧位置→新位置の補間に固定）
 let prevCells: { x: number; y: number }[] | null = null;
 
 // pivot は回転時に都度計算するため不要
