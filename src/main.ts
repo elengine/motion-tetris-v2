@@ -99,7 +99,8 @@ function layout(): void {
     pad.style.left = '10px';
     pad.style.right = 'auto';
     pad.style.width = 'auto';
-    pad.style.gridTemplateColumns = 'repeat(4, 1fr)';
+    pad.style.gridTemplateColumns = 'repeat(5, 1fr)';
+    pad.style.width = 'calc(100% - 320px)';
   } else {
     panels.style.display = 'grid';
     panels.style.top = `${offTop + 10}px`;
@@ -425,12 +426,34 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
 function hideOverlay(): void { overlay.classList.add('hidden'); }
 
 ovAction.addEventListener('click', () => { sound.unlock(); startGame(); });
-pauseBtn.addEventListener('click', togglePause);
-muteBtn.addEventListener('click', () => {
+// ポインタ環境では pointerdown + click の両方が発火し二重トグルになるためデバウンス（回帰: 押しても無効/不自然）
+let lastPausePress = 0;
+const pressPause = (e: Event): void => {
+  e.preventDefault(); e.stopPropagation();
+  const now = Date.now();
+  if (now - lastPausePress < 300) return;
+  lastPausePress = now;
+  sound.unlock();
+  togglePause();
+};
+pauseBtn.addEventListener('pointerdown', pressPause);
+pauseBtn.addEventListener('click', pressPause);
+let lastMutePress = 0;
+const pressMute = (e: Event): void => {
+  e.preventDefault(); e.stopPropagation();
+  const now = Date.now();
+  if (now - lastMutePress < 300) return;
+  lastMutePress = now;
   sound.unlock();
   sound.setMuted(!sound.isMuted);
   muteBtn.textContent = sound.isMuted ? '🔇' : '🔊';
-});
+};
+muteBtn.addEventListener('pointerdown', pressMute);
+muteBtn.addEventListener('click', pressMute);
+// ミュート状態の復元
+sound.setMuted(localStorage.getItem('ntv2:muted') === '1');
+muteBtn.textContent = sound.isMuted ? '🔇' : '🔊';
+muteBtn.addEventListener('pointerdown', () => localStorage.setItem('ntv2:muted', sound.isMuted ? '1' : '0'));
 
 void main();
 void COLS; void ROWS; void TOTAL_ROWS; void HIDDEN_ROWS; void cellToPx;
