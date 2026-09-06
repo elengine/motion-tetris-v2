@@ -55,15 +55,16 @@
 
       <div id="overlay">
         <h1 id="ov-title" class="neon-title">NEON TETRIS</h1>
-        <p id="ov-version" class="ov-version">v1.5.0</p>
+        <p id="ov-version" class="ov-version">v1.6.0</p>
         <p id="ov-sub"></p>
         <div id="ov-body"></div>
-        <select id="mode-select" class="glass-card mode-select">
-          <option value="marathon">マラソン</option>
-          <option value="sprint">スプリント 40L</option>
-          <option value="ultra">ウルトラ 2分</option>
-        </select>
-        <button id="ov-action" class="cta-btn">はじめる</button>
+        <div id="mode-buttons">
+          <button class="mode-btn cta-btn" data-mode="marathon">マラソン</button>
+          <button class="mode-btn cta-btn" data-mode="sprint">スプリント（40ライン）</button>
+          <button class="mode-btn cta-btn" data-mode="ultra">ウルトラ（2分）</button>
+        </div>
+        <button id="ov-action" class="cta-btn">もう一度遊ぶ</button>
+        <button id="back-to-title" class="ghost-btn">スタート画面へ戻る</button>
         <a class="v1-link" href="https://elengine.github.io/motion-tetris/" target="_blank" rel="noopener">旧バージョン (v1) でも遊ぶ →</a>
       </div>
     </div>

@@ -90,7 +90,9 @@ export class SoundEngine {
       case 'rotate': this.tone(330, 0.07, 'triangle', 0.16); this.tone(495, 0.05, 'triangle', 0.1, 0.03); break;
       case 'soft': this.tone(170, 0.04, 'square', 0.08); break;
       case 'hard': this.noise(0.14, 0.4, 0, 2200); this.tone(90, 0.16, 'sine', 0.35); break;
-      case 'lock': this.tone(190, 0.06, 'triangle', 0.18); break;
+      case 'lock': /* 確定サウンド: 落ち着いた2音下→上 (回帰: hardより控えめだが聞き取りやすい) */
+        this.tone(240, 0.05, 'triangle', 0.28);
+        this.tone(360, 0.09, 'triangle', 0.3, 0.055); break;
       case 'line1': this.tone(440, 0.12, 'square', 0.25); this.tone(660, 0.15, 'square', 0.2, 0.08); break;
       case 'line2':
         this.tone(440, 0.1, 'square', 0.24); this.tone(660, 0.1, 'square', 0.24, 0.07);

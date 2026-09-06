@@ -26,10 +26,10 @@ const ovBody = document.getElementById('ov-body')!;
 const ovAction = document.getElementById('ov-action') as HTMLButtonElement;
 const pauseBtn = document.getElementById('pause-btn') as HTMLButtonElement;
 const muteBtn = document.getElementById('mute-btn') as HTMLButtonElement;
-const modeSel = document.getElementById('mode-select') as HTMLSelectElement;
 const nextCanvas = document.getElementById('next-canvas') as HTMLCanvasElement;
 const holdCanvas = document.getElementById('hold-canvas') as HTMLCanvasElement;
 const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
+const backBtn = document.getElementById('back-to-title') as HTMLButtonElement;
 
 // ----- 状態 -----
 const sound = new SoundEngine();
@@ -39,6 +39,7 @@ let game: Game | null = null;
 let running = false;
 let paused = false;
 let bestScore = Number(localStorage.getItem('ntv2:best') || 0);
+let lastMode = GameMode.Marathon;
 
 // 演出状態
 interface FloatText { text: string; color: string; x: number; y: number; t: number; size: number }
@@ -76,13 +77,8 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.5.0'}`;
-  showOverlay(
-    'NEON TETRIS',
-    'Wasm × ガイドライン完全準拠',
-    '<b>PC</b>: ←→ 移動 / ↑・Z・X 回転 / ↓ ソフト / Space ハード / C ホールド<br><b>スマホ</b>: 下部ボタン + スワイプ（盤面タップ=回転）',
-    'はじめる',
-  );
+  ver.textContent = `v${__APP_VERSION__ ?? '1.6.0'}`;
+  showTitle();
 }
 
 function layout(): void {
@@ -257,11 +253,11 @@ function gameOver(): void {
 }
 
 // ----- 操作 -----
-function startGame(): void {
+function startGame(mode: GameMode): void {
   if (!game) return;
+  lastMode = mode;
   document.getElementById('hud')!.style.visibility = 'visible';
   document.getElementById('panels')!.style.visibility = 'visible';
-  const mode = modeSel.value === 'sprint' ? GameMode.Sprint : modeSel.value === 'ultra' ? GameMode.Ultra : GameMode.Marathon;
   game.startGame(mode, BigInt(Date.now() & 0x7fffffff));
   running = true; paused = false;
   sound.unlock();
@@ -470,17 +466,44 @@ function drawFloatTexts(dt: number): void {
 }
 
 // ----- overlay -----
+function showTitle(): void {
+  document.getElementById('mode-buttons')!.style.display = '';
+  backBtn.style.display = 'none';
+  ovAction.style.display = 'none'; // タイトル画面では「はじめる」撤去（モードボタンが直接開始）（回帰: ボタン重複）
+  showOverlay('NEON TETRIS', 'Wasm × ガイドライン完全準拠',
+    '<b>PC</b>: ←→ 移動 / ↑・Z・X 回転 / ↓ ソフト / Space ハード / C ホールド<br><b>スマホ</b>: 下部ボタン + スワイプ（盤面タップ=回転）',
+    'はじめる');
+}
 function showOverlay(title: string, sub: string, body: string, action: string): void {
   ovTitle.textContent = title;
   ovTitle.classList.remove('neon-title'); void ovTitle.offsetWidth; ovTitle.classList.add('neon-title');
   ovSub.textContent = sub;
   ovBody.innerHTML = body;
   ovAction.textContent = action;
+  if (title !== 'NEON TETRIS') {
+    document.getElementById('mode-buttons')!.style.display = 'none'; // 完了/オーバー画面はModeボタン非表示
+    backBtn.style.display = '';
+    ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
+  }
   overlay.classList.remove('hidden');
 }
 function hideOverlay(): void { overlay.classList.add('hidden'); }
 
-ovAction.addEventListener('click', () => { sound.unlock(); startGame(); });
+ovAction.addEventListener('click', () => { sound.unlock(); startGame(lastMode); });
+document.querySelectorAll('.mode-btn').forEach((b) => {
+  b.addEventListener('click', () => {
+    const mv = (b as HTMLElement).dataset.mode;
+    const md = mv === 'sprint' ? GameMode.Sprint : mv === 'ultra' ? GameMode.Ultra : GameMode.Marathon;
+    sound.unlock();
+    startGame(md);
+  });
+});
+// スタート画面へ戻る: タイトルオーバーレイに戻す
+backBtn.addEventListener('click', () => {
+  running = false; paused = false;
+  sound.stopBGM();
+  showTitle();
+});
 // ポインタ環境では pointerdown + click の両方が発火し二重トグルになるためデバウンス（回帰: 押しても無効/不自然）
 let lastPausePress = 0;
 const pressPause = (e: Event): void => {
