@@ -77,6 +77,8 @@ export enum PieceType {
     L = 6,
 }
 
+export function main_js(): void;
+
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
@@ -121,11 +123,12 @@ export interface InitOutput {
     readonly game_soft_drop: (a: number) => number;
     readonly game_startGame: (a: number, b: number, c: bigint) => void;
     readonly game_tick: (a: number, b: number) => void;
+    readonly main_js: () => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __externref_drop_slice: (a: number, b: number) => void;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __wbindgen_start: () => void;
 }
 

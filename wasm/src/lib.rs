@@ -6,6 +6,11 @@
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen(start)]
+pub fn main_js() {
+    std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+}
+
 pub const COLS: usize = 10;
 pub const ROWS: usize = 20;
 pub const HIDDEN_ROWS: usize = 2;

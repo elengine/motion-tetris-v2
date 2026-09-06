@@ -17,6 +17,6 @@ try {
   await new Promise(r => setTimeout(r, 500));
   await evals([`(function(){ window.__game.set_cell(3,23,1); return 'a'; })()`]);
   await evals([`(function(){ window.__game.set_cell(5,22,1); return 'b'; })()`]);
-  await evals([`(function(){ for (var x=0;x<10;x++) window.__game.set_cell(x,23,0); return 'row23'; })()`]);
+  await evals([`(function(){ for (var x=0;x<10;x++) window.__game.set_cell(x,21,0); return 'row23'; })()`]);
   await evals([`(function(){ window.__game.hard_drop(); return 'st'+window.__game.state+' ln'+window.__game.lines; })()`]);
 } finally { await client.close(); }

@@ -273,11 +273,30 @@ fn t20_dbg_panic_full_row_hard_drop() {
         for x in 0..COLS { g.set_cell(x, TOTAL_ROWS - 1, Some(PieceType::I)); }
         g.hard_drop();
     }
-    println!("final state={:?} score_s={} finished={}", g.state, g.score_s(), g.finished);
+    println!("final state={:?} score_s={} finished={} lastbuf={:?}", g.state, g.score_s(), g.finished, g.last_actions());
     // 40行に到達していたら finish が即発火していることを検証
     if g.lines_s() >= 40 {
         assert!(g.finished, "sprint must finish immediately upon 40th line");
         let acts = g.drain_actions();
         assert!(acts.iter().any(|a| a == "finish"), "sprint must emit finish action");
     }
+}
+#[test]
+fn t21_dbg_bulk_fill_hard_drop() {
+    let mut g = Game::new(11); g.start_game(GameMode::Sprint, 11);
+    for _ in 0..3 {
+        for y in 10..TOTAL_ROWS { for x in 0..COLS { g.set_cell(x, y, Some(PieceType::O)); } }
+        g.hard_drop();
+        println!("state={:?} ln={} fin={}", g.state, g.lines_s(), g.finished);
+        if g.state == GameState::GameOver { break; }
+    }
+}
+#[test]
+fn t22_dbg_sprint_setcell() {
+    let mut g = Game::new(11); g.start_game(GameMode::Sprint, 11);
+    for _ in 0..300 { g.tick(16); }
+    g.set_cell(3, 21, Some(PieceType::O));
+    println!("t22 ok set: state={:?}", g.state);
+    g.set_cell(5, 21, Some(PieceType::O));
+    println!("t22 ok set2");
 }

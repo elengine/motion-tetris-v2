@@ -5,10 +5,13 @@ try {
   await Page.enable();
   await Page.navigate({ url: 'http://localhost:5174/?v=' + Date.now() });
   await Page.loadEventFired();
-  await new Promise(r => setTimeout(r, 1800));
+  await new Promise(r => setTimeout(r, 2500));
   await Runtime.evaluate({ expression: `(function(){ document.getElementById('mode-select').value='sprint'; document.getElementById('ov-action').click(); })()` });
   await new Promise(r => setTimeout(r, 500));
-  await Runtime.evaluate({ expression: `for (var x=0;x<10;x++) window.__game.set_cell(x,21,0); 'rowdone'` });
-  const d = await Runtime.evaluate({ expression: `window.__game.hard_drop(); 'ok'`, returnByValue: true, userGesture: true });
-  console.log('hard_drop:', JSON.stringify(d.result), JSON.stringify(d.exceptionDetails ? d.exceptionDetails.exception.description : '').slice(0,400));
+  const d = await Runtime.evaluate({ expression: `(function(){ try {
+    for (var x=0;x<10;x++) window.__game.set_cell(x,21,1);
+    window.__game.hard_drop();
+    return 'ok st'+window.__game.state+' ln'+window.__game.lines;
+  } catch(e) { return 'ERR:'+e.message.slice(0,80); } })()`, returnByValue: true });
+  console.log('dev(single-row-loop):', d.result.value);
 } finally { await client.close(); }

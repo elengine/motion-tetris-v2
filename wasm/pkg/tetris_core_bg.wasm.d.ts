@@ -41,9 +41,10 @@ export const game_set_cell: (a: number, b: number, c: number, d: number) => void
 export const game_soft_drop: (a: number) => number;
 export const game_startGame: (a: number, b: number, c: bigint) => void;
 export const game_tick: (a: number, b: number) => void;
+export const main_js: () => void;
 export const __wbindgen_malloc: (a: number, b: number) => number;
 export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_free: (a: number, b: number, c: number) => void;
 export const __wbindgen_externrefs: WebAssembly.Table;
 export const __externref_drop_slice: (a: number, b: number) => void;
-export const __wbindgen_free: (a: number, b: number, c: number) => void;
 export const __wbindgen_start: () => void;
