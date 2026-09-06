@@ -219,19 +219,25 @@ function gameFinish(): void {
   running = false;
   sound.stopBGM();
   sound.play('finish');
+  // 完了画面中は HUD を隠す（回帰: 中央とHUDにスコアが2重に見えた）
+  document.getElementById('hud')!.style.visibility = 'hidden';
   const sc = Number(game!.score);
   if (sc > bestScore) { bestScore = sc; localStorage.setItem('ntv2:best', String(sc)); }
   const el = Number(game!.elapsedMs);
   const sec = Math.floor(el / 1000);
   const t = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
   const isSprint = game!.mode === GameMode.Sprint;
+  // スコアは3桁区切りで1箇所のみ表示（回帰: 中央にスコア/ラインが2重表示されていた）
+  const scFmt = sc.toLocaleString('en-US');
+  const resultOne = isSprint
+    ? `TIME <b>${t}</b> / LINES <b>40</b>`
+    : `SCORE <b>${scFmt}</b> / LINES <b>${game!.lines}</b>`;
   showOverlay(
     isSprint ? '🏁 40 LINES CLEAR!' : '⏱ TIME UP!',
-    isSprint ? `COMPLETE! TIME ${t}` : `SCORE ${sc} / LINES ${game!.lines}`,
-    isSprint
-      ? `<b>${t}</b> で 40 ラインを達成しました！<br>SCORE ${sc} — 高得点を目指してもう一度！`
-      : `2分間のスコアアタック終了！<br><b>${sc}</b> pts / ${game!.lines} lines`,
+    isSprint ? '40ライン達成！お見事！' : '2分間のスコアアタック終了!',
+    `<div class="finish-frame">${resultOne}</div>`,
     'もう一度遊ぶ');
+  // スコア表示は ov-body 内 1箇所のみ（ov-sub に数値は入れない）
 }
 
 function gameOver(): void {
