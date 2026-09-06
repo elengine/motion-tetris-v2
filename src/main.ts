@@ -60,6 +60,9 @@ async function main(): Promise<void> {
     window.visualViewport.addEventListener('scroll', layout);
   }
   layout();
+  // 開始前は HUD/パネルを隠す（タイトル画面のノイズ除去）
+  document.getElementById('hud')!.style.visibility = 'hidden';
+  document.getElementById('panels')!.style.visibility = 'hidden';
 
   let last = performance.now();
   const loop = (now: number) => {
@@ -96,16 +99,16 @@ function layout(): void {
     panels.style.right = '10px';
     pad.style.display = 'grid';
     pad.style.bottom = '10px';
-    pad.style.left = '10px';
-    pad.style.right = 'auto';
-    pad.style.width = 'auto';
-    pad.style.gridTemplateColumns = 'repeat(5, 1fr)';
-    pad.style.width = 'calc(100% - 320px)';
+    pad.style.left = 'auto';
+    pad.style.right = '10px';
+    pad.style.width = '300px';
+    pad.style.gridTemplateColumns = 'repeat(4, 1fr)';
   } else {
     panels.style.display = 'grid';
     panels.style.top = `${offTop + 10}px`;
     panels.style.right = '10px';
-    pad.style.bottom = 'calc(8px + env(safe-area-inset-bottom))';
+    panels.style.maxWidth = '140px';
+    pad.style.bottom = '0';
     pad.style.left = '0';
     pad.style.right = '0';
     pad.style.width = 'auto';
@@ -206,6 +209,8 @@ function gameOver(): void {
 // ----- 操作 -----
 function startGame(): void {
   if (!game) return;
+  document.getElementById('hud')!.style.visibility = 'visible';
+  document.getElementById('panels')!.style.visibility = 'visible';
   const mode = modeSel.value === 'sprint' ? GameMode.Sprint : modeSel.value === 'ultra' ? GameMode.Ultra : GameMode.Marathon;
   game.startGame(mode, BigInt(Date.now() & 0x7fffffff));
   running = true; paused = false;
@@ -219,7 +224,7 @@ function togglePause(): void {
   if (!running || !game) return;
   game.pause_toggle();
   paused = game.state === GameState.Paused;
-  pauseBtn.textContent = paused ? '▶' : '⏸';
+  pauseBtn.classList.toggle('alt', paused); // ▶(再開) ⏸(停止) SVG切替
   if (paused) { sound.stopBGM(); showOverlay('PAUSED', '一時停止中', '', 'つづける'); }
   else { sound.startBGM(game.level); hideOverlay(); }
 }
@@ -446,13 +451,13 @@ const pressMute = (e: Event): void => {
   lastMutePress = now;
   sound.unlock();
   sound.setMuted(!sound.isMuted);
-  muteBtn.textContent = sound.isMuted ? '🔇' : '🔊';
+  muteBtn.classList.toggle('muted', sound.isMuted); muteBtn.classList.toggle('alt', sound.isMuted);
 };
 muteBtn.addEventListener('pointerdown', pressMute);
 muteBtn.addEventListener('click', pressMute);
 // ミュート状態の復元
 sound.setMuted(localStorage.getItem('ntv2:muted') === '1');
-muteBtn.textContent = sound.isMuted ? '🔇' : '🔊';
+muteBtn.classList.toggle('muted', sound.isMuted); muteBtn.classList.toggle('alt', sound.isMuted);
 muteBtn.addEventListener('pointerdown', () => localStorage.setItem('ntv2:muted', sound.isMuted ? '1' : '0'));
 
 void main();

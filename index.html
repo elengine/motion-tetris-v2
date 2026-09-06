@@ -27,8 +27,8 @@
         <div class="stat hud-mini"><span class="hud-label">TIME</span><span id="hud-time" class="hud-value">00:00</span></div>
         <div class="stat hud-mini"><span class="hud-label">BEST</span><span id="hud-best" class="hud-value">-</span></div>
         <div class="btns">
-          <button id="pause-btn" class="mini-btn">⏸</button>
-          <button id="mute-btn" class="mini-btn">🔊</button>
+          <button id="pause-btn" class="mini-btn" aria-label="一時停止"><svg viewBox="0 0 24 24" class="ic ic-main"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg><svg viewBox="0 0 24 24" class="ic ic-alt"><path d="M8 5l11 7-11 7z"/></svg></button>
+          <button id="mute-btn" class="mini-btn" aria-label="音声切替"><svg viewBox="0 0 24 24" class="ic ic-main"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><svg viewBox="0 0 24 24" class="ic ic-alt"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
         </div>
       </div>
 
@@ -41,12 +41,6 @@
           <h3 class="panel-title">HOLD</h3>
           <canvas id="hold-canvas" width="120" height="64"></canvas>
         </aside>
-        <select id="mode-select" class="glass-card mode-select">
-          <option value="marathon">マラソン</option>
-          <option value="sprint">スプリント 40L</option>
-          <option value="ultra">ウルトラ 2分</option>
-        </select>
-        <a class="v1-link" href="https://elengine.github.io/motion-tetris/" target="_blank" rel="noopener">旧バージョン (v1) でも遊ぶ →</a>
       </div>
 
       <div id="touchpad">
@@ -63,7 +57,13 @@
         <h1 id="ov-title" class="neon-title">NEON TETRIS</h1>
         <p id="ov-sub"></p>
         <div id="ov-body"></div>
-        <button id="ov-action">はじめる</button>
+        <select id="mode-select" class="glass-card mode-select">
+          <option value="marathon">マラソン</option>
+          <option value="sprint">スプリント 40L</option>
+          <option value="ultra">ウルトラ 2分</option>
+        </select>
+        <button id="ov-action" class="cta-btn">はじめる</button>
+        <a class="v1-link" href="https://elengine.github.io/motion-tetris/" target="_blank" rel="noopener">旧バージョン (v1) でも遊ぶ →</a>
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>

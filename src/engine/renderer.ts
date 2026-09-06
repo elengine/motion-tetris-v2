@@ -17,14 +17,23 @@ export interface Layout {
 
 export function computeLayout(w: number, h: number): Layout {
   const isLandscape = w / h >= 1.2;
+  // 縦持ちタッチ端末: 下部の操作バー(~86px + safe-area)をボードから除く（回帰: 操作ボタンが落下エリアに被る）
+  const coarse = window.matchMedia('(pointer: coarse)').matches;
+  // 縦持ち: 操作バー1段(~92px) / 横長: 操作バー2段(~200px) をボード下に予約（回帰: ボタンが落下エリアに被る）
+  const bottomReserve = coarse ? (isLandscape ? 210 : 96) : 0;
   // セルサイズ: 縦横の小さい方から算出（20行+α / 10列+α）
-  const cellL = Math.floor((h - 24) / ROWS);
-  const cellP = Math.floor(((w - 24) / (isLandscape ? 2.1 : 1)) / COLS);
+  const cellL = Math.floor((h - 24 - bottomReserve) / ROWS);
+  const sideReserve = !isLandscape && coarse ? 112 : 0; // 縦持ち: 右にNEXT/HOLD帯
+  const cellP = Math.floor(((w - 24 - sideReserve) / (isLandscape ? 2.1 : 1)) / COLS);
   const cell = Math.max(12, Math.min(cellL, cellP, 44));
   const boardW = cell * COLS;
   const boardH = cell * ROWS;
-  const boardX = isLandscape ? Math.floor(w / 2 - boardW / 2 - cell * 1.5) : Math.floor(w / 2 - boardW / 2);
-  const boardY = Math.floor((h - boardH) / 2);
+  const boardX = isLandscape ? Math.floor(w / 2 - boardW / 2 - cell * 1.5) : Math.floor((w - sideReserve) / 2 - boardW / 2);
+  const topReserve = bottomReserve > 0 ? (isLandscape ? 64 : 84) : 0; // HUD分の上部余白
+  const maxY = h - bottomReserve - boardH - 8;
+  const boardY = bottomReserve > 0
+    ? Math.max(topReserve, Math.min(Math.floor((h - bottomReserve - boardH) / 2), maxY))
+    : Math.max(topReserve, Math.floor((h - boardH) / 2));
   return { cell, boardX, boardY, boardW, boardH, showSide: isLandscape };
 }
 
