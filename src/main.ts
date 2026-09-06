@@ -76,7 +76,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.4.0'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.4.1'}`;
   showOverlay(
     'NEON TETRIS',
     'Wasm × ガイドライン完全準拠',

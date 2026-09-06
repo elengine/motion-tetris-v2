@@ -6,7 +6,7 @@ import topAwait from 'vite-plugin-top-level-await';
 
 export default defineConfig(({ mode }) => ({
   define: {
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '1.4.0'),
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '1.4.1'),
   },
   base: './',
   resolve: {
