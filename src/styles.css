@@ -315,3 +315,14 @@ html, body {
   .finish-frame { font-size: 20px; padding: 16px 20px; }
   .finish-frame b { font-size: 30px; }
 }
+
+/* ---------- 完了枠: 赤系バリアント (GAME OVER用 — ユーザー要望) ---------- */
+.finish-frame.danger {
+  border-color: rgba(255, 80, 90, 0.55);
+  background: linear-gradient(160deg, rgba(255, 80, 90, 0.12) 0%, rgba(255, 40, 80, 0.08) 50%, rgba(40, 12, 24, 0.6) 100%);
+  box-shadow: 0 0 30px rgba(255, 60, 80, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.finish-frame.danger b {
+  color: #ff6b7d;
+  text-shadow: 0 0 16px rgba(255, 70, 90, 0.65);
+}

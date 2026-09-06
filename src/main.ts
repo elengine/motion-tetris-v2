@@ -76,7 +76,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.4.1'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.5.0'}`;
   showOverlay(
     'NEON TETRIS',
     'Wasm × ガイドライン完全準拠',
@@ -244,13 +244,15 @@ function gameOver(): void {
   running = false;
   sound.stopBGM();
   sound.play('gameover');
+  // 完了画面と同デザインに統一（回帰: 画面デザインの不統一）— 赤系配色
+  document.getElementById('hud')!.style.visibility = 'hidden';
   const sc = Number(game!.score);
   if (sc > bestScore) { bestScore = sc; localStorage.setItem('ntv2:best', String(sc)); }
-  const el = Number(game!.elapsedMs);
-  const sec = Math.floor(el / 1000);
-  showOverlay('GAME OVER',
-    `SCORE ${sc} / LINES ${game!.lines} / LEVEL ${game!.level}`,
-    game!.mode === GameMode.Sprint || game!.mode === GameMode.Ultra ? `TIME ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}` : '',
+  const scFmt = sc.toLocaleString('en-US');
+  const result = `SCORE <b>${scFmt}</b> / LINES <b>${game!.lines}</b>`;
+  showOverlay('💥 GAME OVER',
+    'ブロックが天井まで積み上がった…',
+    `<div class="finish-frame danger">${result}</div>`,
     'もう一度遊ぶ');
 }
 
