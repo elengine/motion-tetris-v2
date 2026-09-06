@@ -374,6 +374,12 @@ impl Game {
         ev.points = pts;
         self.score += pts;
         self.lines += cleared;
+        // スプリント40L: ライン確定の瞬間にも判定（tick 待ちせず即 finish）（回帰: 40ライン達成時に終わらない）
+        if self.mode == GameMode::Sprint && self.lines >= 40 {
+            self.finished = true; self.state = GameState::GameOver;
+            self.events.push(ClearEvent { lines: self.lines, tspin: 0, b2b: false, combo: 0, perfect_clear: false, points: 0, action: "finish".into() });
+            return;
+        }
         // レベル（マラソン: 10ライン毎 / スプリント・ウルトラも同様に加速）
         let nl = 1 + self.lines / 10;
         self.level = nl;
@@ -396,10 +402,17 @@ impl Game {
     pub fn tick(&mut self, dt: i32) {
         if self.state != GameState::Playing { return; }
         self.elapsed += dt as i64;
-        // モード終了判定
+        // モード終了判定 — クリア(straight to win) は ev.action="finish" でフロントへ通知
+        // (回帰: スプリント40L達成後にBGMが鳴り続け finish 演出が無かった)
         match self.mode {
-            GameMode::Sprint => if self.lines >= 40 { self.finished = true; self.state = GameState::GameOver; },
-            GameMode::Ultra => if self.elapsed >= 120_000 { self.finished = true; self.state = GameState::GameOver; },
+            GameMode::Sprint => if self.lines >= 40 {
+                self.finished = true; self.state = GameState::GameOver;
+                self.events.push(ClearEvent { lines: self.lines, tspin: 0, b2b: false, combo: 0, perfect_clear: false, points: 0, action: "finish".into() });
+            },
+            GameMode::Ultra => if self.elapsed >= 120_000 {
+                self.finished = true; self.state = GameState::GameOver;
+                self.events.push(ClearEvent { lines: self.lines, tspin: 0, b2b: false, combo: 0, perfect_clear: false, points: 0, action: "finish".into() });
+            },
             _ => {}
         }
         if self.state != GameState::Playing { return; }

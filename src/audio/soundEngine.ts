@@ -5,7 +5,7 @@
 export type SfxName =
   | 'move' | 'rotate' | 'soft' | 'hard' | 'lock'
   | 'line1' | 'line2' | 'line3' | 'line4'
-  | 'tspin' | 'levelup' | 'hold' | 'gameover' | 'pause';
+  | 'tspin' | 'levelup' | 'hold' | 'gameover' | 'pause' | 'finish';
 
 export class SoundEngine {
   private ctx: AudioContext | null = null;
@@ -106,6 +106,13 @@ export class SoundEngine {
       case 'hold': this.tone(300, 0.06, 'triangle', 0.16); this.tone(450, 0.08, 'triangle', 0.16, 0.05); break;
       case 'gameover': [440, 392, 330, 262, 196].forEach((f, i) => this.tone(f, 0.3, 'sawtooth', 0.2, i * 0.13)); break;
       case 'pause': this.tone(260, 0.09, 'triangle', 0.14); break;
+      // 完走ファンファーレ: 上昇アルペジオ＋悠久コード (gameover の下降と対になる喜びの音)
+      case 'finish': {
+        const arp = [523, 659, 784, 1046, 1319];
+        arp.forEach((f, i) => this.tone(f, 0.18, 'triangle', 0.26, i * 0.11));
+        [523, 659, 784].forEach((f) => this.tone(f, 1.1, 'sine', 0.18, 0.62)); // 最後に長く鳴る C-E-G (ハッピーコード)
+        break;
+      }
     }
   }
 

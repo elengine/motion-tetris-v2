@@ -281,3 +281,12 @@ html, body {
     border-top: 1px solid rgba(0, 240, 255, 0.16);
   }
 }
+/* バージョン表記 (タイトル直下) */
+.ov-version {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
+  text-align: center;
+}

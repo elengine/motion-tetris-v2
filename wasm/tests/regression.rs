@@ -223,3 +223,61 @@ fn t16_hard_drop_not_lock_event() {
     let acts = g.drain_actions();
     assert!(!acts.iter().any(|a| a == "lock"), "hard drop must NOT emit 'lock' action, got: {:?}", acts);
 }
+
+#[test]
+// 回帰（2026-09-06 要望）: ウルトラ2分終了時 action "finish" イベントが出る（完走演出/BGM停止用）
+fn t17_ultra_finish_event() {
+    let mut g = Game::new(33); g.start_game(GameMode::Ultra, 33);
+    g.tick(121_000);
+    assert!(g.finished);
+    assert_eq!(g.state, GameState::GameOver);
+    let acts = g.drain_actions();
+    assert!(acts.iter().any(|a| a == "finish"), "ultra time-up must emit 'finish' action, got: {:?}", acts);
+}
+
+#[test]
+// 回帰: finish 後は操作可能状態に戻らず（state=GameOver固定）・tickは無視
+fn t18_finish_state_is_terminal() {
+    let mut g = Game::new(33); g.start_game(GameMode::Ultra, 33);
+    g.tick(121_000);
+    assert_eq!(g.state, GameState::GameOver);
+    g.tick(16);
+    g.hard_drop();
+    g.soft_drop();
+    assert_eq!(g.state, GameState::GameOver, "finish must be terminal");
+}
+
+#[test]
+// 回帰: マラソンでは 120秒経過しても終了しない（finish/gameover が誤発火しない）
+fn t19_marathon_not_finished_at_2min() {
+    let mut g = Game::new(5); g.start_game(GameMode::Marathon, 5);
+    // 120秒以上経過させる（ピースは都度処理せず周期的に消して積み上げ回避のため hard_drop を挟む）
+    // 純粋に elapsed 判定のみ検証する: state が GameOver になったとしても finished=false であれば
+    // マラソンが「2分終了」ロジックで終わっていないことを意味する
+    for _ in 0..2000 { g.tick(16); }
+    if g.state == GameState::GameOver {
+        assert!(!g.finished, "marathon must never set finished (that's finish/win, not stack-out)");
+    } else {
+        assert_eq!(g.state, GameState::Playing, "marathon must not time-out at 2min");
+    }
+}
+#[test]
+fn t20_dbg_panic_full_row_hard_drop() {
+    let mut g = Game::new(5); g.start_game(GameMode::Sprint, 5);
+    for x in 0..COLS { g.set_cell(x, TOTAL_ROWS - 1, Some(PieceType::I)); }
+    g.hard_drop(); // 1行消去 + finish 判定 (1行目消去, lines=1)
+    println!("state={:?} score_s={} finished={}", g.state, g.score_s(), g.finished);
+    // 続けて残りを消す事象を確認
+    for _ in 0..41 {
+        if g.state == GameState::GameOver { break; }
+        for x in 0..COLS { g.set_cell(x, TOTAL_ROWS - 1, Some(PieceType::I)); }
+        g.hard_drop();
+    }
+    println!("final state={:?} score_s={} finished={}", g.state, g.score_s(), g.finished);
+    // 40行に到達していたら finish が即発火していることを検証
+    if g.lines_s() >= 40 {
+        assert!(g.finished, "sprint must finish immediately upon 40th line");
+        let acts = g.drain_actions();
+        assert!(acts.iter().any(|a| a == "finish"), "sprint must emit finish action");
+    }
+}

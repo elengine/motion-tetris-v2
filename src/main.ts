@@ -10,6 +10,8 @@ import { SoundEngine, SfxName } from './audio/soundEngine';
 import { PIECES, PieceType, COLS, ROWS, TOTAL_ROWS, HIDDEN_ROWS } from './core/pieces';
 import { initialOffset, offsetAt } from './engine/rotanim';
 
+declare const __APP_VERSION__: string | undefined;
+
 // ----- DOM -----
 document.getElementById('app');
 const hudScore = document.getElementById('hud-score')!;
@@ -72,6 +74,9 @@ async function main(): Promise<void> {
   };
   requestAnimationFrame(loop);
 
+  // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
+  const ver = document.getElementById('ov-version')!;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.4.0'}`;
   showOverlay(
     'NEON TETRIS',
     'Wasm × ガイドライン完全準拠',
@@ -137,6 +142,9 @@ function tick(dt: number): void {
     handleRepeat(dt);
     processEvents();
   }
+  if (running && game.state === GameState.GameOver) {
+    processEvents(); // タイムアウト/クリア直後に GameOver になったフレームでも finish/gameover イベントを受け取る
+  }
   // 回転アニメ補間: 偏差 rotAnimOffset を 90ms で 0 に減衰させる（旧回転状態→新状態へ見た目だけ回る）
   if (Math.abs(rotAnimOffset) > 0.01) {
     rotAnimElapsed += dt;
@@ -181,6 +189,7 @@ function processEvents(): void {
   if (!Array.isArray(evs)) return;
   for (const ev of evs) {
     if (ev.action === 'gameover') { gameOver(); continue; }
+    if (ev.action === 'finish') { gameFinish(); continue; } // モード完走（スプリント40L/ウルトラ2分）
     if (ev.action === 'lock') { sound.play('lock'); continue; } // 自然落下で位置が確定した時の効果音（回帰修正）
     audioOnClear(ev);
   }
@@ -203,6 +212,26 @@ function ellipse(ev: { lines: number; tspin: number; perfect_clear: boolean; act
       if (ev.action === 'tetris') float('TETRIS!', '#c86bff', 40);
     }
   }
+}
+
+/** モード完走（スプリント40Lクリア / ウルトラ2分終了）— 祝い演出 */
+function gameFinish(): void {
+  running = false;
+  sound.stopBGM();
+  sound.play('finish');
+  const sc = Number(game!.score);
+  if (sc > bestScore) { bestScore = sc; localStorage.setItem('ntv2:best', String(sc)); }
+  const el = Number(game!.elapsedMs);
+  const sec = Math.floor(el / 1000);
+  const t = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+  const isSprint = game!.mode === GameMode.Sprint;
+  showOverlay(
+    isSprint ? '🏁 40 LINES CLEAR!' : '⏱ TIME UP!',
+    isSprint ? `COMPLETE! TIME ${t}` : `SCORE ${sc} / LINES ${game!.lines}`,
+    isSprint
+      ? `<b>${t}</b> で 40 ラインを達成しました！<br>SCORE ${sc} — 高得点を目指してもう一度！`
+      : `2分間のスコアアタック終了！<br><b>${sc}</b> pts / ${game!.lines} lines`,
+    'もう一度遊ぶ');
 }
 
 function gameOver(): void {
@@ -338,12 +367,12 @@ canvas.addEventListener('touchstart', (e) => {
 canvas.addEventListener('touchend', (e) => {
   if (moved) return;
   const t = e.changedTouches[0];
-  if (Math.hypot(t.clientX - sx, t.clientY - sy) < 14 && Date.now() - st0 < 260 && running && !paused) {
+  if (Math.hypot(t.clientX - sx, t.clientY - sy) < 14 && Date.now() - st0 < 260 && running && !paused && game && game.state === GameState.Playing) {
     beginRotate(1);
   }
 }, { passive: true });
 canvas.addEventListener('touchmove', (e) => {
-  if (moved || !running || paused || !game) return;
+  if (moved || !running || paused || !game || game.state !== GameState.Playing) return; // 回帰: 終了後にスワイプで効果音
   const t = e.changedTouches[0];
   const dx = t.clientX - sx, dy = t.clientY - sy, TH = 44;
   if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > TH) { game.move_h(dx < 0 ? -1 : 1); sound.play('move'); moved = true; }
