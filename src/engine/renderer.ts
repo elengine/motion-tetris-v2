@@ -15,25 +15,23 @@ export interface Layout {
   showSide: boolean;  // 横長時にサイドパネル表示
 }
 
-export function computeLayout(w: number, h: number): Layout {
+export function computeLayout(w: number, h: number, reserves?: { bottom?: number; top?: number; side?: number }): Layout {
   const isLandscape = w / h >= 1.2;
-  // 縦持ちタッチ端末: 下部の操作バー(~86px + safe-area)をボードから除く（回帰: 操作ボタンが落下エリアに被る）
-  const coarse = window.matchMedia('(pointer: coarse)').matches;
-  // 縦持ち: 操作バー1段(~92px) / 横長: 操作バー2段(~200px) をボード下に予約（回帰: ボタンが落下エリアに被る）
-  const bottomReserve = coarse ? (isLandscape ? 210 : 96) : 0;
+  // 有名テトリスのモバイルUIと同様、盤面は「実測された UI 領域を除いた残り」にフィットさせる。
+  // caller(main.layout)が touchpad/HUD の実測 getBoundingClientRect を渡す（回帰: 固定値だと実機で盤面がボタンに被る）
+  const bottomReserve = Math.round(reserves?.bottom ?? 0);
+  const topReserve = Math.round(reserves?.top ?? 0);
+  const sideReserve = Math.round(reserves?.side ?? 0);
   // セルサイズ: 縦横の小さい方から算出（20行+α / 10列+α）
-  const cellL = Math.floor((h - 24 - bottomReserve) / ROWS);
-  const sideReserve = !isLandscape && coarse ? 112 : 0; // 縦持ち: 右にNEXT/HOLD帯
+  const cellL = Math.floor((h - 24 - bottomReserve - topReserve) / ROWS);
   const cellP = Math.floor(((w - 24 - sideReserve) / (isLandscape ? 2.1 : 1)) / COLS);
-  const cell = Math.max(12, Math.min(cellL, cellP, 44));
+  const cell = Math.max(10, Math.min(cellL, cellP, 44));
   const boardW = cell * COLS;
   const boardH = cell * ROWS;
   const boardX = isLandscape ? Math.floor(w / 2 - boardW / 2 - cell * 1.5) : Math.floor((w - sideReserve) / 2 - boardW / 2);
-  const topReserve = bottomReserve > 0 ? (isLandscape ? 64 : 84) : 0; // HUD分の上部余白
-  const maxY = h - bottomReserve - boardH - 8;
-  const boardY = bottomReserve > 0
-    ? Math.max(topReserve, Math.min(Math.floor((h - bottomReserve - boardH) / 2), maxY))
-    : Math.max(topReserve, Math.floor((h - boardH) / 2));
+  const availTop = topReserve;
+  const availBottom = h - bottomReserve;
+  const boardY = Math.min(Math.max(availTop + 4, Math.floor((availTop + availBottom - boardH) / 2)), Math.max(availTop + 4, availBottom - boardH - 8));
   return { cell, boardX, boardY, boardW, boardH, showSide: isLandscape };
 }
 
@@ -87,13 +85,19 @@ export class Renderer {
     this.layout = computeLayout(canvas.clientWidth || 800, canvas.clientHeight || 600);
   }
 
+  reserves: { bottom?: number; top?: number; side?: number } = {};
+  setReserves(res: { bottom?: number; top?: number; side?: number }): void {
+    this.reserves = res;
+    const w = this.canvas.clientWidth, h = this.canvas.clientHeight;
+    this.layout = computeLayout(w, h, res);
+  }
   resize(): void {
     const el = this.canvas;
     const w = el.clientWidth, h = el.clientHeight;
     el.width = Math.floor(w * this.dpr);
     el.height = Math.floor(h * this.dpr);
     this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    this.layout = computeLayout(w, h);
+    this.layout = computeLayout(w, h, this.reserves);
   }
 
   /** 1フレーム描画 */

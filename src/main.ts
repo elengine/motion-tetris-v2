@@ -82,7 +82,6 @@ async function main(): Promise<void> {
 
 function layout(): void {
   if (!renderer) return;
-  renderer.resize();
   const vv = window.visualViewport;
   const vw = vv ? vv.width : window.innerWidth;
   const vh = vv ? vv.height : window.innerHeight;
@@ -93,6 +92,20 @@ function layout(): void {
   const pad = document.getElementById('touchpad')!;
   hud.style.top = `${offTop + 10}px`;
   hud.style.left = '10px';
+  // 実測ベースのレイアウト（回帰: 固定reserveだと実機で盤面がボタンに被る/横画面で盤面が小さい）
+  // 1) 先に DOM 位置を確定 → 2) touchpad/HUD/panels の実高を実測 → 3) 盤面を残り領域にフィット
+  const hudH = hud.offsetHeight + 20; // HUD 高+下マージン
+  requestAnimationFrame(() => {
+    // touchpad はこの時点で DOM 完了している
+    const pr = pad.getBoundingClientRect();
+    const nr = panels.getBoundingClientRect();
+    const bottomReserve = Math.ceil(pr.height + (vh - pr.bottom)) + 8; // pad 高 + 下部残り(safe-area)
+    const topReserve = Math.ceil(offTop + hudH);
+    const sideReserve = isLandscape ? 0 : Math.ceil(nr.width + 24);
+    renderer.setReserves({ bottom: bottomReserve, top: topReserve, side: sideReserve });
+    renderer.resize();
+  });
+  // DOM 変更（display/位置）はここまでに確定させる
   if (isLandscape) {
     panels.style.display = 'grid';
     panels.style.top = `${offTop + 10}px`;

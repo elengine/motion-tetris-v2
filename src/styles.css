@@ -82,7 +82,7 @@ html, body {
    代わりに touchpad の gap を広げる */
 /* Fold8 展開 (横長) はさらに大きく */
 @media (orientation: landscape) {
-  #touchpad .tc { height: 84px; font-size: 30px; }
+  #touchpad .tc { height: 46px; font-size: 22px; }
 }
 .hud-label {
   display: block;
@@ -142,8 +142,7 @@ html, body {
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
   z-index: 11;
   /* 専用バー: 背景ベタ → ボードブロックが透けて見えない (回帰: 操作ボタンが落下エリアに被る) */
-  background: linear-gradient(180deg, rgba(10, 14, 39, 0.55) 0%, rgba(10, 14, 39, 0.97) 38%, #0a0e27 100%);
-  border-top: 1px solid rgba(0, 240, 255, 0.16);
+  background: transparent; /* 横持ちでは右下に分離するため帯背景不要 (縦持ちは下記で上書き) */
 }
 .tc {
   height: 64px;
@@ -274,3 +273,11 @@ html, body {
 
 #ov-title { text-align: center; }
 #ov-action { display: block; margin-left: auto; margin-right: auto; }
+
+/* 縦持ち: 操作バー背景は帯 (盤面との分離) */
+@media (pointer: coarse) and (orientation: portrait) {
+  #touchpad {
+    background: linear-gradient(180deg, rgba(10, 14, 39, 0.55) 0%, rgba(10, 14, 39, 0.97) 38%, #0a0e27 100%);
+    border-top: 1px solid rgba(0, 240, 255, 0.16);
+  }
+}
