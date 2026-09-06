@@ -264,7 +264,7 @@ html, body {
   background: rgba(20, 28, 68, 0.72); border: 1px solid var(--glass-border); border-radius: 12px;
   backdrop-filter: blur(12px);
 }
-.v1-link { display: block; margin-top: 14px; font-size: 12px; color: #8fb4ff; text-align: center; }
+.v1-link { display: block; margin-top: 26px; font-size: 12px; color: #8fb4ff; text-align: center; }
 
 /* overlay 直下要素を中央縦積み (回帰: row flex で横並び崩壊) */
 #overlay > * { max-width: 92vw; }
@@ -329,9 +329,10 @@ html, body {
 
 /* ---------- スタート画面モードボタン (回帰: プルダウン撤去→ボタン選択) ---------- */
 #mode-buttons {
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex; flex-direction: column; gap: 18px; /* ボタン間隔を空ける（回帰: 指くっつきタップ誤爆） */
   align-items: center;
   width: 100%;
+  margin-top: 22px; /* 操作説明との間隔 */
 }
 .mode-btn {
   width: min(82vw, 340px);
@@ -339,17 +340,19 @@ html, body {
   font-size: 17px;
   letter-spacing: 0.06em;
 }
-/* スタート画面へ戻る: 落ち着いたゴーストボタン */
+/* スタート画面へ戻る: 完了画面用 落ち着いたゴーストボタン（サイズUP+間隔空け） */
 .ghost-btn {
   display: block;
-  margin: 10px auto 0;
-  padding: 10px 26px;
-  font-size: 13px;
+  margin: 16px auto 0;
+  padding: 13px 34px;
+  font-size: 15px;
   color: var(--muted);
   background: rgba(20, 28, 68, 0.4);
   border: 1px solid rgba(120, 150, 255, 0.25);
-  border-radius: 24px;
+  border-radius: 28px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
 .ghost-btn:active { color: var(--text); border-color: rgba(0, 240, 255, 0.4); }
+
+#ov-action { margin-top: 26px; } /* 「もう一度遊ぶ」: スコア枠との間隔 */

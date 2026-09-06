@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.6.0'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.6.1'}`;
   showTitle();
 }
 
@@ -470,6 +470,7 @@ function showTitle(): void {
   document.getElementById('mode-buttons')!.style.display = '';
   backBtn.style.display = 'none';
   ovAction.style.display = 'none'; // タイトル画面では「はじめる」撤去（モードボタンが直接開始）（回帰: ボタン重複）
+  (document.querySelector('.v1-link') as HTMLElement)!.style.display = ''; // v1リンクはタイトルのみ
   showOverlay('NEON TETRIS', 'Wasm × ガイドライン完全準拠',
     '<b>PC</b>: ←→ 移動 / ↑・Z・X 回転 / ↓ ソフト / Space ハード / C ホールド<br><b>スマホ</b>: 下部ボタン + スワイプ（盤面タップ=回転）',
     'はじめる');
@@ -484,6 +485,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
     document.getElementById('mode-buttons')!.style.display = 'none'; // 完了/オーバー画面はModeボタン非表示
     backBtn.style.display = '';
     ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
+    (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none'; // 完了画面ではv1リンク撤去（回帰: 画面整理）
   }
   overlay.classList.remove('hidden');
 }
