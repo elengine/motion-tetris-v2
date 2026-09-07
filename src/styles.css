@@ -434,7 +434,8 @@ html, body {
   margin: 6px 0 8px;
 }
 .howto-realbtn {
-  width: 44px; height: 44px;
+  width: 28px; height: 28px; /* PCのキーバッジと同サイズ (回帰: スマホボタンが大きすぎ) */
+  border-radius: 8px;
   display: inline-flex; align-items: center; justify-content: center;
   background: rgba(20, 28, 68, 0.72);
   border: 1px solid rgba(0, 240, 255, 0.35);
@@ -442,7 +443,7 @@ html, body {
   color: var(--cyan);
   box-shadow: 0 0 12px rgba(0, 240, 255, 0.18);
 }
-.howto-realbtn svg { width: 22px; height: 22px; }
+.howto-realbtn svg { width: 16px; height: 16px; }
 .howto-realbtn.muted { color: #ff9db2; border-color: rgba(255, 107, 125, 0.5); box-shadow: 0 0 12px rgba(255, 107, 125, 0.2); }
 .howto-realbtn .ic-alt { display: none; }
 .howto-realbtn.muted .ic-main { display: none; }
@@ -460,3 +461,10 @@ html, body {
 }
 
 .howto-note { margin: 6px 0 0; font-size: 11.5px; color: #7f92c8; }
+
+.howto-realbtn.sm {
+  display: inline-flex; vertical-align: middle;
+  margin: 0 2px; transform: translateY(-2px);
+}
+/* インライン内ではリスト行と同じ高さ */
+.howto-card li .howto-realbtn.sm { height: 26px; min-width: 26px; font-size: 14px; }

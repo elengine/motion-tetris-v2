@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.0'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.1'}`;
   showTitle();
 }
 
@@ -365,6 +365,7 @@ document.querySelectorAll('.tc').forEach((btn) => {
 let sx = 0, sy = 0, st0 = 0, moved = false;
 let sy0 = 0, movedHorizOnly = false; // touched 元々の追跡は soft_drop 常時化で不要に
 canvas.addEventListener('touchstart', (e) => {
+  if (game === null || running === false || paused) return; // 開始前/ポーズ中: 盤面タップ無効（回帰: スタート画面でサウンドトグルが誤反応）
   sound.unlock();
   const t = e.changedTouches[0];
   sx = t.clientX; sy = t.clientY; sy0 = t.clientY; st0 = Date.now(); moved = false; movedHorizOnly = false;
@@ -372,6 +373,7 @@ canvas.addEventListener('touchstart', (e) => {
 canvas.addEventListener('touchend', (e) => {
   const t = e.changedTouches[0];
   const playState = running && !paused && game && game.state === GameState.Playing;
+  if (!playState) return; // 開始前/ポーズ中は盤面操作無効（回帰: スタート画面/ポーズ中に誤操作）
   // 素早い下フリック → ハードドロップ（回帰: 少し下スワイプでもハードドロップしていた → 時間160ms以内のフリックのみ許可）
   if (playState && game && t.clientY - sy0 > 44 && Date.now() - st0 < 160 && !movedHorizOnly) {
     e.preventDefault();
@@ -384,7 +386,8 @@ canvas.addEventListener('touchend', (e) => {
   }
 }, { passive: false });
 canvas.addEventListener('touchmove', (e) => {
-  if (!running || paused || !game || game.state !== GameState.Playing) return; // 回帰: 終了後にスワイプで効果音
+  if (!running || paused || !game || game.state !== GameState.Playing) return; // 回帰: 終了後/開始前にスワイプで誤操作
+  e.preventDefault();
   e.preventDefault(); // 下スワイプでのページスクロール抑止
   const t = e.changedTouches[0];
   const dx = t.clientX - sx, dy = t.clientY - sy, TH = 44;
@@ -497,14 +500,17 @@ const HOWTO_HTML = `
     <section class="howto-card">
       <h3><span class="howto-ico">📱</span> スマホでの操作</h3>
       <ul>
-        <li>移動　　　　　　 画面を左右にスワイプ</li>
-        <li>左回転　　　　　 <span class="howto-opbtn">⟲</span> ボタン</li>
-        <li>右回転　　　　　 画面タップ / 上スワイプ / <span class="howto-opbtn">⟳</span> ボタン</li>
-        <li>ソフトドロップ　 画面をゆっくり下にドラッグ</li>
-        <li>ハードドロップ　 画面を素早く下にフリック / <span class="howto-opbtn">⤓</span> ボタン</li>
-        <li>ホールド　　　　 <span class="howto-opbtn">H</span> ボタン</li>
+        <li>左移動　　　　　 画面を左にスワイプ / <span class="howto-realbtn sm">◀</span></li>
+        <li>右移動　　　　　 画面を右にスワイプ / <span class="howto-realbtn sm">▶</span></li>
+        <li>左回転　　　　　 <span class="howto-realbtn sm">⟲</span></li>
+        <li>右回転　　　　　 画面タップ / 上スワイプ / <span class="howto-realbtn sm">⟳</span></li>
+        <li>ソフトドロップ　 画面をゆっくり下にドラッグ / <span class="howto-realbtn sm">↓</span></li>
+        <li>ハードドロップ　 画面を素早く下にフリック / <span class="howto-realbtn sm">⤓</span></li>
+        <li>ホールド　　　　 <span class="howto-realbtn sm">H</span></li>
       </ul>
       <div class="howto-btn-row">
+        <span class="howto-realbtn" title="左移動">◀</span>
+        <span class="howto-realbtn" title="右移動">▶</span>
         <span class="howto-realbtn" title="回転（左）">⟲</span>
         <span class="howto-realbtn" title="回転（右）">⟳</span>
         <span class="howto-realbtn" title="ソフトドロップ">↓</span>
@@ -595,6 +601,8 @@ document.getElementById('howto-link')!.addEventListener('click', (e) => {
 backBtn.addEventListener('click', () => {
   running = false; paused = false;
   sound.stopBGM();
+  pauseBtn.classList.remove('alt'); // ポーズアイコンを通常に戻す（回帰: 再開後のSVG状態不整合）
+  document.getElementById('hud')!.style.visibility = 'hidden'; // 回帰: ポーズ→スタート画面に戻るとHUDが残る
   showTitle();
 });
 // ポインタ環境では pointerdown + click の両方が発火し二重トグルになるためデバウンス（回帰: 押しても無効/不自然）
