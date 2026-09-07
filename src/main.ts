@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.2'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.3'}`;
   showTitle();
 }
 
@@ -548,6 +548,7 @@ const HOWTO_HTML = `
   </div>`;
 
 function showTitle(): void {
+  document.getElementById('title-toggles')!.style.display = ''; // サウンドボタンはスタート画面（あそびかた上）のみ
   document.getElementById('mode-buttons')!.style.display = '';
   backBtn.style.display = 'none';
   ovAction.style.display = 'none'; // タイトル画面では「はじめる」撤去（モードボタンが直接開始）（回帰: ボタン重複）
@@ -558,6 +559,7 @@ function showTitle(): void {
 
 // 遊び方画面: PC/スマホ/モード説明 + スタート画面へ戻る
 function showHowto(): void {
+  document.getElementById('title-toggles')!.style.display = 'none'; // あそびかた画面ではサウンドボタン撤去
   document.getElementById('hud')!.style.visibility = 'hidden'; // 回帰: あそびかた画面にサウンドボタン等を表示しない
   document.getElementById('mode-buttons')!.style.display = 'none';
   ovAction.style.display = 'none';
@@ -578,6 +580,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
     ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
     (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none'; // 完了画面ではv1リンク撤去（回帰: 画面整理）
     document.getElementById('howto-link')!.style.display = 'none'; // 完了画面では「あそびかた」リンク非表示（スタート画面のみ設置）
+    document.getElementById('title-toggles')!.style.display = 'none'; // 完了/オーバー画面ではサウンドボタン撤去（スタート画面のみ設置）
   }
   overlay.classList.remove('hidden');
 }
