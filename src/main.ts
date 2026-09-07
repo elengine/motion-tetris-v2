@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.1'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.2'}`;
   showTitle();
 }
 
@@ -271,8 +271,8 @@ function togglePause(): void {
   game.pause_toggle();
   paused = game.state === GameState.Paused;
   pauseBtn.classList.toggle('alt', paused); // ▶(再開) ⏸(停止) SVG切替
-  if (paused) { sound.stopBGM(); showOverlay('PAUSED', '一時停止中', '', 'つづける'); }
-  else { sound.startBGM(game.level); hideOverlay(); }
+  if (paused) { sound.stopBGM(); document.getElementById('hud')!.style.visibility = 'hidden'; showOverlay('PAUSED', '一時停止中', '', 'つづける'); } // 回帰: 一時停止画面にHUDのサウンドボタン等が見える
+  else { document.getElementById('hud')!.style.visibility = 'visible'; sound.startBGM(game.level); hideOverlay(); }
 }
 
 // key handling: DAS/ARR
@@ -558,6 +558,7 @@ function showTitle(): void {
 
 // 遊び方画面: PC/スマホ/モード説明 + スタート画面へ戻る
 function showHowto(): void {
+  document.getElementById('hud')!.style.visibility = 'hidden'; // 回帰: あそびかた画面にサウンドボタン等を表示しない
   document.getElementById('mode-buttons')!.style.display = 'none';
   ovAction.style.display = 'none';
   (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none';
@@ -582,7 +583,11 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
 }
 function hideOverlay(): void { overlay.classList.add('hidden'); }
 
-ovAction.addEventListener('click', () => { sound.unlock(); startGame(lastMode); });
+ovAction.addEventListener('click', () => {
+  sound.unlock();
+  if (paused) { togglePause(); return; } // PAUSED画面の「つづける」= 再開（回帰: 押すと新規ゲームが始まっていた）
+  startGame(lastMode);
+});
 document.querySelectorAll('.mode-btn').forEach((b) => {
   b.addEventListener('click', () => {
     const mv = (b as HTMLElement).dataset.mode;
