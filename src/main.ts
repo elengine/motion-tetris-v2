@@ -236,9 +236,11 @@ function gameFinish(): void {
   showOverlay(
     isSprint ? '🏁 40 LINES CLEAR!' : '⏱ TIME UP!',
     isSprint ? '40ライン達成！お見事！' : '2分間のスコアアタック終了!',
-    `<div class="finish-frame">${resultOne}</div>`,
+    `<div class="finish-frame">${resultOne}</div><div id="rank-area"></div>`,
     'もう一度遊ぶ');
   // スコア表示は ov-body 内 1箇所のみ（ov-sub に数値は入れない）
+  void wireRankSubmit({ mode: (game!.mode === GameMode.Sprint ? 'sprint' : 'ultra') as SupaMode,
+    score: sc, lines: game!.lines, level: game!.level ?? 1, elapsedMs: Number(game!.elapsedMs), isClear: true });
 }
 
 function gameOver(): void {
@@ -707,8 +709,8 @@ async function wireRankSubmit(payload: { mode: SupaMode; score: number; lines: n
     const res = await submitScoreRow(payload);
     const st = document.getElementById('rank-status');
     if (st) st.textContent = res.ok
-      ? (res.rank ? `📈 ランキング登録済み — 第 ${res.rank} 位！` : '📈 ランキングに登録しました！')
-      : '📈 ランキング登録に失敗しました';
+      ? (res.rank ? `📈 ランキングに登録しました — 第 ${res.rank} 位！` : '📈 ランキングに登録しました！')
+      : '⚠️ ランキング登録に失敗しました（通信状況をご確認ください）';
   } else {
     area.innerHTML = submitAreaHtml();
     document.getElementById('rank-submit-btn')?.addEventListener('click', () => {

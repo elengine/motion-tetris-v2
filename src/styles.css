@@ -176,7 +176,7 @@ html, body {
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 40px 20px 20px;
+  padding: 20px;
   background: radial-gradient(ellipse at center, #0d1233 0%, #070b22 100%); /* 不透明（回帰: スクロール時に下のゲーム画面が透ける） */
   z-index: 15; /* 回帰: 20 だと pause/mute ボタン(z12)が押せない */
   opacity: 1; transition: opacity 0.35s;
@@ -193,6 +193,7 @@ html, body {
   max-width: min(92vw, 480px);
 }
 .neon-title {
+  min-height: clamp(40px, 9.2vw, 64px); /* フォントロード前の初期描画でも高さを確保（ロゴが上に上がるちらつき対策） */
   margin: 0 0 8px;
   overflow-wrap: anywhere;
   font-size: clamp(38px, 9vw, 62px);
