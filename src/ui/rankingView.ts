@@ -86,8 +86,7 @@ export async function showHistoryView(backTo: () => void): Promise<void> {
   const nameForm = `<div class="name-edit"><input id="name-input" class="name-input" maxlength="20" placeholder="名前を入力（20文字まで）" value="${esc(me?.display_name ?? '')}"><button id="name-save" class="cta-btn name-btn">名前を変更</button></div>`;
   ovBody.innerHTML = `${nameForm}<div id="hist-body" class="rank-body">読み込み中…</div>
     <button id="to-ranking" class="ghost-btn">🏆 ランキングへ</button>
-    ${me ? '<button id="logout-btn2" class="ghost-btn">ログアウト</button>' : ''}
-    <button id="hist-back" class="ghost-btn">スタート画面へ戻る</button>`;
+    ${me ? '<button id="logout-btn2" class="ghost-btn">ログアウト</button>' : ''}`;
   const rows = await fetchMyHistory(30);
   const hist = document.getElementById('hist-body');
   if (hist) hist.innerHTML = rows.length
@@ -100,7 +99,6 @@ export async function showHistoryView(backTo: () => void): Promise<void> {
     (document.getElementById('name-save') as HTMLButtonElement)!.textContent = ok ? '変更しました ✓' : '失敗しました';
   });
   document.getElementById('to-ranking')!.addEventListener('click', () => { void showRankingView(backTo); });
-  document.getElementById('hist-back')!.addEventListener('click', () => { backTo(); });
   const lb = document.getElementById('logout-btn2');
   if (lb) lb.addEventListener('click', async () => { await logout(); backTo(); });
 }

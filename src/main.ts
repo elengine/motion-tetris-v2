@@ -673,6 +673,11 @@ titleSoundBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); press
 titleSoundBtn.addEventListener('click', (e) => pressMute(e));
 syncTitleSoundBtn();
 
+// ----- スタート画面 ランキング(トロフィー)ボタン -----
+const titleRankBtn = document.getElementById('title-rank-btn') as HTMLButtonElement;
+titleRankBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); sound.unlock(); });
+titleRankBtn.addEventListener('click', () => { void showRankingView(showTitle); });
+
 // ----- 認証状態に応じたスタート画面表示 + HUD BEST 切替（設計書 §7-6/§8） -----
 async function applyAuthUI(): Promise<void> {
   const me = currentProfile();
