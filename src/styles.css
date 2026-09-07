@@ -193,7 +193,6 @@ html, body {
   max-width: min(92vw, 480px);
 }
 .neon-title {
-  min-height: clamp(40px, 9.2vw, 64px); /* フォントロード前の初期描画でも高さを確保（ロゴが上に上がるちらつき対策） */
   margin: 0 0 8px;
   overflow-wrap: anywhere;
   font-size: clamp(38px, 9vw, 62px);
