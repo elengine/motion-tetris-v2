@@ -159,11 +159,11 @@ html, body {
 .tc:active { transform: scale(0.94); background: rgba(80, 110, 255, 0.75); }
 .tc-acc { color: var(--cyan); border-color: rgba(0, 240, 255, 0.4); }
 .tc-drop { background: rgba(200, 107, 255, 0.35); border-color: rgba(200, 107, 255, 0.55); }
-@media (pointer: coarse) { #touchpad { display: grid; } }
+body.touch-device #touchpad { display: grid; visibility: visible; } /* タッチ端末のみ（JS判定。PC検証は body に touch-device を付与して実機再現） */
 
 /* 横長(Fold8展開)時: touchpad は右下に集約 */
-@media (orientation: landscape) and (pointer: coarse) {
-  #touchpad {
+@media (orientation: landscape) {
+  body.touch-device #touchpad {
     left: auto;
     width: 300px;
     grid-template-columns: repeat(4, 1fr);

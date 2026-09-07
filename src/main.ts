@@ -17,6 +17,10 @@ declare const __APP_VERSION__: string | undefined;
 
 // ----- DOM -----
 document.getElementById('app');
+// タッチ端末判定 → 操作ボタン(touchpad)の表示ON。pointer:coarse 単独ではエミュレータ/実機の差が起きるため ontouchstart も併用
+if (('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia('(pointer: coarse)').matches) {
+  document.body.classList.add('touch-device');
+}
 // 起動直後から HUD/パネルを隠す（wasmロード完了前の初期表示でHUDがちらつく対策）
 document.getElementById('hud')!.style.visibility = 'hidden';
 document.getElementById('panels')!.style.visibility = 'hidden';
