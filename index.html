@@ -18,7 +18,7 @@
     <!-- FOUC対策: JS/CSSモジュール読み込み完了前の初期フレームでHUDが露出するのを防ぐ（styles.css はJS importも維持） -->
     <link rel="stylesheet" href="./src/styles.css" />
   </head>
-  <body>
+  <body class="overlay-open">
     <div id="app">
       <canvas id="game-canvas"></canvas>
 
@@ -45,7 +45,7 @@
         </aside>
       </div>
 
-      <div id="touchpad">
+      <div id="touchpad" style="visibility:hidden">
         <button class="tc" data-action="left">◀</button>
         <button class="tc" data-action="rot-ccw">↺</button>
         <button class="tc" data-action="rot-cw">↻</button>
