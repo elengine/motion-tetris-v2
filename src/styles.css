@@ -425,7 +425,7 @@ html, body {
 }
 
 /* ---------- スタート画面サウンドトグル (HUDミニボタンと同デザイン) ---------- */
-#title-toggles { margin-bottom: 16px; display: flex; justify-content: center; }
+#title-toggles { margin-bottom: 16px; display: flex; justify-content: center; gap: 22px; }
 #title-sound-btn { pointer-events: auto; }
 
 /* ---------- 遊び方画面: 実物ボタン再現 + pause/sound共通説明カード ---------- */

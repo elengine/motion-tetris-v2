@@ -54,10 +54,10 @@ export async function showRankingView(backTo: () => void): Promise<void> {
   ovTitle.textContent = '🏆 ランキング';
   const tabs = (['marathon', 'sprint', 'ultra'] as Mode[]).map((mm) =>
     `<button class="rank-tab${mm === currentTab ? ' on' : ''}" data-m="${mm}">${MODE_LABEL[mm]}</button>`).join('');
-  ovBody.innerHTML = `<div class="rank-tabs">${tabs}</div><div id="rank-body" class="rank-body">読み込み中…</div>
-    <button id="history-link" class="ghost-btn">📜 自分の履歴</button>`;
+  const histBtn = currentProfile() ? '<button id="history-link" class="ghost-btn">📜 自分の履歴</button>' : '';
+  ovBody.innerHTML = `<div class="rank-tabs">${tabs}</div><div id="rank-body" class="rank-body">読み込み中…</div>${histBtn}`;
   void renderTab();
-  document.getElementById('history-link')!.addEventListener('click', () => { void showHistoryView(backTo); });
+  document.getElementById('history-link')?.addEventListener('click', () => { void showHistoryView(backTo); });
   ovBody.querySelectorAll('.rank-tab').forEach((b) => b.addEventListener('click', () => {
     currentTab = (b as HTMLElement).dataset.m as Mode;
     ovBody.querySelectorAll('.rank-tab').forEach((x) => x.classList.toggle('on', x === b));

@@ -710,7 +710,7 @@ async function wireRankSubmit(payload: { mode: SupaMode; score: number; lines: n
     const res = await submitScoreRow(payload);
     const st = document.getElementById('rank-status');
     if (st) st.textContent = res.ok
-      ? (res.rank ? `📈 ランキング登録済み — 等 ${res.rank} 位！` : '📈 ランキングに登録しました！')
+      ? (res.rank ? `📈 ランキング登録済み — 第 ${res.rank} 位！` : '📈 ランキングに登録しました！')
       : '📈 ランキング登録に失敗しました';
   } else {
     area.innerHTML = submitAreaHtml();
