@@ -372,6 +372,7 @@ html, body {
 #howto-link {
   display: block;
   margin: 0 auto 18px; /* モードボタン直上に置き、モードボタンとの適度な間隔 */
+  padding: 8px 24px; /* タップ領域を確保（誤タップ防止） */
   font-size: 16px;
   color: #8fd8ff;
   text-align: center;
@@ -470,8 +471,9 @@ html, body {
 .howto-card li .howto-realbtn.sm { height: 26px; min-width: 26px; font-size: 14px; }
 
 /* ---------- ソーシャルランキング/ログイン (v2.0.0) ---------- */
-#login-row { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center; }
-.login-btn { padding: 10px 24px; font-size: 15px; border-radius: 24px; }
+#login-row { margin-top: 22px; margin-bottom: 16px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; align-items: center; }
+#login-row + #howto-link { margin-top: 14px; } /* ログインボタンとあそびかたの誤タップ防止 */
+.login-btn { padding: 13px 30px; font-size: 16px; border-radius: 28px; }
 .login-name { font-size: 16px; color: #9fd0ff; }
 .ghost-btn.small { padding: 7px 16px; font-size: 12px; border-radius: 18px; margin: 0; }
 #social-row { margin-top: 18px; display: flex; justify-content: center; }
