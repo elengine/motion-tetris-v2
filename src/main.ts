@@ -586,6 +586,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
   ovSub.textContent = sub;
   ovBody.innerHTML = body;
   ovAction.textContent = action;
+  document.getElementById('ov-version')!.style.display = (title === 'NEON TETRIS') ? '' : 'none'; // バージョンはスタート画面のみ
   if (title !== 'NEON TETRIS' && title !== 'あそびかた') {
     document.getElementById('mode-buttons')!.style.display = 'none'; // 完了/オーバー画面はModeボタン非表示
     backBtn.style.display = '';

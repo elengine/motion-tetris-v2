@@ -172,12 +172,12 @@ html, body {
 
 /* ---------- オーバーレイ ---------- */
 #overlay {
+  overscroll-behavior: contain;
   position: fixed; inset: 0;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 20px;
-  background: radial-gradient(ellipse at center, rgba(10, 14, 39, 0.75) 0%, rgba(5, 7, 22, 0.95) 100%);
-  backdrop-filter: blur(10px);
+  background: radial-gradient(ellipse at center, #0d1233 0%, #070b22 100%); /* 不透明（回帰: スクロール時に下のゲーム画面が透ける） */
   z-index: 15; /* 回帰: 20 だと pause/mute ボタン(z12)が押せない */
   opacity: 1; transition: opacity 0.35s;
 }
