@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.7.0'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.8.0'}`;
   showTitle();
 }
 
@@ -363,28 +363,41 @@ document.querySelectorAll('.tc').forEach((btn) => {
 });
 
 let sx = 0, sy = 0, st0 = 0, moved = false;
+let sy0 = 0, movedHorizOnly = false; // touched 元々の追跡は soft_drop 常時化で不要に
 canvas.addEventListener('touchstart', (e) => {
   sound.unlock();
   const t = e.changedTouches[0];
-  sx = t.clientX; sy = t.clientY; st0 = Date.now(); moved = false;
+  sx = t.clientX; sy = t.clientY; sy0 = t.clientY; st0 = Date.now(); moved = false; movedHorizOnly = false;
 }, { passive: true });
 canvas.addEventListener('touchend', (e) => {
-  if (moved) return;
   const t = e.changedTouches[0];
-  if (Math.hypot(t.clientX - sx, t.clientY - sy) < 14 && Date.now() - st0 < 260 && running && !paused && game && game.state === GameState.Playing) {
+  const playState = running && !paused && game && game.state === GameState.Playing;
+  // 素早い下フリック → ハードドロップ（回帰: 少し下スワイプでもハードドロップしていた → 時間160ms以内のフリックのみ許可）
+  if (playState && game && t.clientY - sy0 > 44 && Date.now() - st0 < 160 && !movedHorizOnly) {
+    e.preventDefault();
+    game.hard_drop(); sound.play('hard');
+    return;
+  }
+  // タップ（ほぼ動かず短押し）→ 右回転
+  if (!moved && Math.hypot(t.clientX - sx, t.clientY - sy0) < 14 && Date.now() - st0 < 260 && playState) {
     beginRotate(1);
   }
-}, { passive: true });
+}, { passive: false });
 canvas.addEventListener('touchmove', (e) => {
-  if (moved || !running || paused || !game || game.state !== GameState.Playing) return; // 回帰: 終了後にスワイプで効果音
+  if (!running || paused || !game || game.state !== GameState.Playing) return; // 回帰: 終了後にスワイプで効果音
+  e.preventDefault(); // 下スワイプでのページスクロール抑止
   const t = e.changedTouches[0];
   const dx = t.clientX - sx, dy = t.clientY - sy, TH = 44;
-  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > TH) { game.move_h(dx < 0 ? -1 : 1); sound.play('move'); moved = true; }
-  else if (Math.abs(dy) > TH) {
-    if (dy > 0) { game.hard_drop(); sound.play('hard'); } else { beginRotate(1); }
-    moved = true;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > TH) {
+    if (!moved) { game.move_h(dx < 0 ? -1 : 1); sound.play('move'); moved = true; movedHorizOnly = true; }
+  } else if (dy > TH) {
+    // 下方向ドラッグ: 追従ソフトドロップ（回帰: 少しスワイプでハードドロップ → ゆっくり引く間はソフトドロップ）
+    game.soft_drop();
+    sx = t.clientX; sy = t.clientY;
+  } else if (dy < -TH && !moved) {
+    beginRotate(1); moved = true; // 上スワイプ=回転
   }
-}, { passive: true });
+}, { passive: false });
 
 // ----- NEXT / HOLD 描画 -----
 function drawBlock2D(c: HTMLCanvasElement, px: number, py: number, size: number, type: PieceType): void {
@@ -472,30 +485,32 @@ const HOWTO_HTML = `
     <section class="howto-card">
       <h3><span class="howto-ico">🖥</span> PC での操作</h3>
       <ul>
-        <li><span class="key">←</span><span class="key">→</span> 移動</li>
-        <li><span class="key">↑</span> / <span class="key">Z</span> / <span class="key">X</span> 回転（左／右）</li>
-        <li><span class="key">↓</span> ソフトドロップ</li>
-        <li><span class="key">Space</span> ハードドロップ（即着地）</li>
-        <li><span class="key">C</span> ホールド（1回ずつ保持）</li>
-        <li><span class="key">P</span> / <span class="key">Esc</span> 一時停止</li>
+        <li>移動　　　　　　 <span class="key">←</span><span class="key">→</span></li>
+        <li>左回転　　　　　 <span class="key">Z</span> / <span class="key">Ctrl</span></li>
+        <li>右回転　　　　　 <span class="key">↑</span> / <span class="key">X</span></li>
+        <li>ソフトドロップ　 <span class="key">↓</span></li>
+        <li>ハードドロップ　 <span class="key">Space</span></li>
+        <li>ホールド　　　　 <span class="key">C</span> / <span class="key">Shift</span></li>
+        <li>一時停止　　　　 <span class="key">P</span> / <span class="key">Esc</span></li>
       </ul>
     </section>
     <section class="howto-card">
       <h3><span class="howto-ico">📱</span> スマホでの操作</h3>
       <ul>
-        <li>画面タップ または 回転ボタン → 回転</li>
-        <li>左右スワイプ → 移動</li>
-        <li>下フリック → ソフトドロップ</li>
-        <li>下スワイプ（素早く）→ ハードドロップ</li>
-        <li>下部ボタン → 移動／回転／ドロップ／ホールド</li>
+        <li>移動　　　　　　 画面を左右にスワイプ</li>
+        <li>左回転　　　　　 回転ボタン（⟲）</li>
+        <li>右回転　　　　　 画面タップ / 上スワイプ / 回転ボタン（⟳）</li>
+        <li>ソフトドロップ　 画面をゆっくり下にドラッグ</li>
+        <li>ハードドロップ　 画面を素早く下にフリック</li>
+        <li>ホールド　　　　 下部の H ボタン</li>
       </ul>
     </section>
     <section class="howto-card">
       <h3><span class="howto-ico">🎮</span> モードとルール</h3>
       <ul>
-        <li><b>マラソン</b>: 10ラインごとにレベルアップ。どこまで高得点を狙えるか</li>
-        <li><b>スプリント（40ライン）</b>: 40ライン消すまでのタイムを競う</li>
-        <li><b>ウルトラ（2分）</b>: 2分でどれだけスコアを稼げるか</li>
+        <li><b>マラソン</b>　10ラインごとにレベルアップ。どこまで高得点を狙えるか</li>
+        <li><b>スプリント（40ライン）</b>　40ライン消すまでのタイムを競う</li>
+        <li><b>ウルトラ（2分）</b>　2分でどれだけスコアを稼げるか</li>
       </ul>
     </section>
   </div>`;
@@ -529,6 +544,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
     backBtn.style.display = '';
     ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
     (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none'; // 完了画面ではv1リンク撤去（回帰: 画面整理）
+    document.getElementById('howto-link')!.style.display = 'none'; // 完了画面では「あそびかた」リンク非表示（スタート画面のみ設置）
   }
   overlay.classList.remove('hidden');
 }

@@ -211,6 +211,17 @@ html, body {
 }
 .ov-sub { margin: 0 0 14px; font-size: 13px; color: var(--muted); letter-spacing: 0.08em; text-align: center; }
 .ov-body { font-size: 13px; line-height: 1.8; color: #cdd8ff; text-align: center; margin: 0 auto 18px; min-height: 20px; overflow-wrap: anywhere; white-space: normal; max-width: min(86vw, 420px); }
+/* 遊び方画面: 上下見切れ対策 → スクロール可能に（回帰: Fold8縦でカードが見切れ） */
+#overlay:has(.howto) {
+  justify-content: flex-start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 30px 20px;
+}
+#overlay:has(.howto) #ov-body {
+  max-height: none;
+}
 .ov-body b { color: var(--cyan); font-weight: 800; }
 .cta-btn {
   padding: 14px 52px;
@@ -360,8 +371,8 @@ html, body {
 /* ---------- 遊び方画面 (回帰: スタート画面の操作説明を分離し洗練レイアウトに) ---------- */
 #howto-link {
   display: block;
-  margin-top: 22px;
-  font-size: 14px;
+  margin: 0 auto 18px; /* モードボタン直上に置き、モードボタンとの適度な間隔 */
+  font-size: 16px;
   color: #8fd8ff;
   text-align: center;
   text-decoration: underline dotted;
