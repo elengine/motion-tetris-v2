@@ -468,3 +468,30 @@ html, body {
 }
 /* インライン内ではリスト行と同じ高さ */
 .howto-card li .howto-realbtn.sm { height: 26px; min-width: 26px; font-size: 14px; }
+
+/* ---------- ソーシャルランキング/ログイン (v2.0.0) ---------- */
+#login-row { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center; }
+.login-btn { padding: 10px 24px; font-size: 15px; border-radius: 24px; }
+.login-name { font-size: 13px; color: #9fd0ff; }
+.ghost-btn.small { padding: 7px 16px; font-size: 12px; border-radius: 18px; margin: 0; }
+#social-row { margin-top: 18px; display: flex; justify-content: center; }
+.rank-link-btn { padding: 12px 36px; font-size: 16px; }
+
+.rank-status { font-size: 13px; color: #9ff0c8; margin-top: 14px; min-height: 18px; }
+.rank-btn { padding: 12px 30px; font-size: 15px; margin-top: 14px; }
+.rank-note { font-size: 11px; color: #7f92c8; margin: 6px 0 0; }
+
+.rank-tabs { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+.rank-tab { padding: 8px 16px; font-size: 13px; border-radius: 20px; border: 1px solid rgba(120,150,255,0.3); background: rgba(20,28,68,0.5); color: #b9ccff; cursor: pointer; }
+.rank-tab.on { background: linear-gradient(135deg, #00e5ff33, #7c4dff33); color: #e8f4ff; border-color: rgba(0,229,255,0.6); box-shadow: 0 0 10px rgba(0,229,255,0.25); }
+.rank-body { min-height: 120px; max-height: 42vh; overflow-y: auto; overscroll-behavior: contain; }
+.rank-list { margin: 0; padding: 0; list-style: none; text-align: left; }
+.rank-item { display: flex; gap: 8px; align-items: baseline; padding: 7px 4px; border-bottom: 1px dashed rgba(120,160,255,0.14); font-size: 13.5px; color: #cfe0ff; }
+.rank-item .rank-pos { min-width: 26px; text-align: center; color: #ffd76b; font-weight: 800; }
+.rank-item .rank-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-item .rank-val { color: #7ff0ff; white-space: nowrap; }
+.rank-item .rank-date { font-size: 11px; color: #7f92c8; white-space: nowrap; }
+.rank-item.rank-me { background: rgba(0,229,255,0.08); border-radius: 8px; }
+.name-edit { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
+.name-input { background: rgba(16,22,56,0.8); border: 1px solid rgba(120,150,255,0.35); color: #eaf4ff; border-radius: 10px; padding: 8px 12px; font-size: 14px; width: min(60vw, 240px); }
+.name-btn { padding: 9px 18px; font-size: 13px; border-radius: 10px; margin: 0; }

@@ -4,6 +4,9 @@
  * 座標変換は renderer の cellToPx に一本化 → ズレ・消滅バグの構造的排除。
  */
 import './styles.css';
+import { initAuth, sessionChanged, currentProfile, loginWithGoogle, logout } from './supabase/auth';
+import { submitScore, fetchMyBest, type Mode as SupaMode, type ScoreRow } from './supabase/ranking';
+import { showRankingView, submitAreaHtml, setPending, takePending } from './ui/rankingView';
 import { loadCore, Game, GameMode, GameState } from './core/wasmCore';
 import { Renderer, cellToPx } from './engine/renderer';
 import { SoundEngine, SfxName } from './audio/soundEngine';
@@ -75,9 +78,11 @@ async function main(): Promise<void> {
   };
   requestAnimationFrame(loop);
 
+  // ----- ソーシャルランキング: 自動セッション復元（設計書 §8） -----
+  void initAuth(async (session) => { await sessionChanged(session); await applyAuthUI(); if (session) { const p = takePending(); if (p) void wireRankSubmit(p); } });
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.5'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '2.0.0'}`;
   showTitle();
 }
 
@@ -248,8 +253,10 @@ function gameOver(): void {
   const result = `SCORE <b>${scFmt}</b> / LINES <b>${game!.lines}</b>`;
   showOverlay('💥 GAME OVER',
     'ブロックが天井まで積み上がった…',
-    `<div class="finish-frame danger">${result}</div>`,
+    `<div class="finish-frame danger">${result}</div><div id="rank-area"></div>`,
     'もう一度遊ぶ');
+  void wireRankSubmit({ mode: (game!.mode === GameMode.Sprint ? 'sprint' : game!.mode === GameMode.Ultra ? 'ultra' : 'marathon') as SupaMode,
+    score: sc, lines: game!.lines, level: game!.level ?? 1, elapsedMs: Number(game!.elapsedMs), isClear: false });
 }
 
 // ----- 操作 -----
@@ -550,6 +557,9 @@ const HOWTO_HTML = `
 
 function showTitle(): void {
   document.getElementById('title-toggles')!.style.display = ''; // サウンドボタンはスタート画面（あそびかた上）のみ
+  document.getElementById('login-row')!.style.display = ''; // ログインエリア
+  document.getElementById('social-row')!.style.display = ''; // ランキングボタン
+  void applyAuthUI();
   document.getElementById('mode-buttons')!.style.display = '';
   backBtn.style.display = 'none';
   ovAction.style.display = 'none'; // タイトル画面では「はじめる」撤去（モードボタンが直接開始）（回帰: ボタン重複）
@@ -561,6 +571,8 @@ function showTitle(): void {
 // 遊び方画面: PC/スマホ/モード説明 + スタート画面へ戻る
 function showHowto(): void {
   document.getElementById('title-toggles')!.style.display = 'none'; // あそびかた画面ではサウンドボタン撤去
+  document.getElementById('login-row')!.style.display = 'none';
+  document.getElementById('social-row')!.style.display = 'none';
   requestAnimationFrame(() => { document.getElementById('overlay')!.scrollTop = 0; }); // 回帰: 前回のスクロール位置が残る（描画後にリセット）
   document.getElementById('hud')!.style.visibility = 'hidden'; // 回帰: あそびかた画面にサウンドボタン等を表示しない
   document.getElementById('mode-buttons')!.style.display = 'none';
@@ -583,6 +595,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
     (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none'; // 完了画面ではv1リンク撤去（回帰: 画面整理）
     document.getElementById('howto-link')!.style.display = 'none'; // 完了画面では「あそびかた」リンク非表示（スタート画面のみ設置）
     document.getElementById('title-toggles')!.style.display = 'none'; // 完了/オーバー画面ではサウンドボタン撤去（スタート画面のみ設置）
+    document.getElementById('social-row')!.style.display = 'none'; // 完了画面ではランキング入口は置かない
   }
   overlay.classList.remove('hidden');
 }
@@ -601,7 +614,12 @@ document.querySelectorAll('.mode-btn').forEach((b) => {
     startGame(md);
   });
 });
-// 遊び方リンク → 遊び方画面
+// ランキングリンク → ランキング表示（設計書 §3.2)
+document.getElementById('rank-link')!.addEventListener('click', () => {
+  sound.unlock();
+  void showRankingView(showTitle);
+});
+// あそびかたリンク（元のハンドラは下）
 document.getElementById('howto-link')!.addEventListener('click', (e) => {
   e.preventDefault();
   sound.unlock();
@@ -654,6 +672,50 @@ function syncTitleSoundBtn(): void {
 titleSoundBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); pressMute(e); });
 titleSoundBtn.addEventListener('click', (e) => pressMute(e));
 syncTitleSoundBtn();
+
+// ----- 認証状態に応じたスタート画面表示 + HUD BEST 切替（設計書 §7-6/§8） -----
+async function applyAuthUI(): Promise<void> {
+  const me = currentProfile();
+  const row = document.getElementById('login-row') as HTMLElement | null;
+  if (!row) return;
+  if (me) {
+    row.innerHTML = `<span class="login-name">👤 ${me.display_name}</span><button id="logout-btn-title" class="ghost-btn small">ログアウト</button>`;
+    document.getElementById('logout-btn-title')?.addEventListener('click', async () => { await logout(); await applyAuthUI(); });
+    const best = await fetchMyBest();
+    if (best > 0) { bestScore = best; hudBest.textContent = String(best); }
+  } else {
+    row.innerHTML = `<button id="login-btn-title" class="cta-btn login-btn">Google でログイン</button>`;
+    document.getElementById('login-btn-title')?.addEventListener('click', () => { sound.unlock(); loginWithGoogle(); });
+  }
+}
+
+/** ScoreRow 変換して投稿 */
+async function submitScoreRow(p: { mode: SupaMode; score: number; lines: number; level: number; elapsedMs: number; isClear: boolean }): Promise<{ ok: boolean; rank?: number | null }> {
+  const row: ScoreRow = { mode: p.mode, score: p.score, lines: p.lines, level: p.level, elapsed_ms: p.elapsedMs, is_clear: p.isClear, played_at: new Date().toISOString() };
+  return await submitScore(row);
+}
+
+// 完了/GAMEOVER ↔ ランキング送信の共通接続（設計書 §3.4）
+async function wireRankSubmit(payload: { mode: SupaMode; score: number; lines: number; level: number; elapsedMs: number; isClear: boolean }): Promise<void> {
+  const area = document.getElementById('rank-area');
+  if (!area) return;
+  const me = currentProfile();
+  if (me) {
+    area.innerHTML = '<div id="rank-status" class="rank-status">📈 ランキングに登録中…</div>';
+    const res = await submitScoreRow(payload);
+    const st = document.getElementById('rank-status');
+    if (st) st.textContent = res.ok
+      ? (res.rank ? `📈 ランキング登録済み — 等 ${res.rank} 位！` : '📈 ランキングに登録しました！')
+      : '📈 ランキング登録に失敗しました';
+  } else {
+    area.innerHTML = submitAreaHtml();
+    document.getElementById('rank-submit-btn')?.addEventListener('click', () => {
+      setPending(payload);
+      sound.unlock();
+      loginWithGoogle(); // 戻り後、セッション反映時に自動送信
+    });
+  }
+}
 
 void main();
 void COLS; void ROWS; void TOTAL_ROWS; void HIDDEN_ROWS; void cellToPx;

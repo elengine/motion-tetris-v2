@@ -57,6 +57,13 @@ export function loginWithGoogle(): void {
   });
 }
 
+/** 開発検証用: OAuth URL 生成のみ確認（リダイレクトしない）。本番UIは不使用 */
+export async function testOAuthUrl(): Promise<string | null> {
+  const sb = supabase(); if (!sb) return null;
+  const { data } = await sb.auth.signInWithOAuth({ provider: 'google', options: { skipBrowserRedirect: true } });
+  return data?.url ?? null;
+}
+
 export async function logout(): Promise<void> {
   const sb = supabase(); if (!sb) return;
   await sb.auth.signOut();
