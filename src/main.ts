@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.4'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.5'}`;
   showTitle();
 }
 
@@ -561,13 +561,14 @@ function showTitle(): void {
 // 遊び方画面: PC/スマホ/モード説明 + スタート画面へ戻る
 function showHowto(): void {
   document.getElementById('title-toggles')!.style.display = 'none'; // あそびかた画面ではサウンドボタン撤去
+  requestAnimationFrame(() => { document.getElementById('overlay')!.scrollTop = 0; }); // 回帰: 前回のスクロール位置が残る（描画後にリセット）
   document.getElementById('hud')!.style.visibility = 'hidden'; // 回帰: あそびかた画面にサウンドボタン等を表示しない
   document.getElementById('mode-buttons')!.style.display = 'none';
   ovAction.style.display = 'none';
   (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none';
   document.getElementById('howto-link')!.style.display = 'none';
   backBtn.style.display = '';
-  showOverlay('遊び方', '', HOWTO_HTML, '');
+  showOverlay('あそびかた', '', HOWTO_HTML, '');
 }
 function showOverlay(title: string, sub: string, body: string, action: string): void {
   ovTitle.textContent = title;
@@ -575,7 +576,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
   ovSub.textContent = sub;
   ovBody.innerHTML = body;
   ovAction.textContent = action;
-  if (title !== 'NEON TETRIS' && title !== '遊び方') {
+  if (title !== 'NEON TETRIS' && title !== 'あそびかた') {
     document.getElementById('mode-buttons')!.style.display = 'none'; // 完了/オーバー画面はModeボタン非表示
     backBtn.style.display = '';
     ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
