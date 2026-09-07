@@ -4,7 +4,7 @@
  * 座標変換は renderer の cellToPx に一本化 → ズレ・消滅バグの構造的排除。
  */
 import './styles.css';
-import { initAuth, sessionChanged, currentProfile, loginWithGoogle, logout } from './supabase/auth';
+import { initAuth, sessionChanged, currentProfile, loginWithGoogle, logout, authStateChanged } from './supabase/auth';
 import { submitScore, fetchMyBest, type Mode as SupaMode, type ScoreRow } from './supabase/ranking';
 import { showRankingView, submitAreaHtml, setPending, takePending } from './ui/rankingView';
 import { loadCore, Game, GameMode, GameState } from './core/wasmCore';
@@ -678,6 +678,7 @@ async function applyAuthUI(): Promise<void> {
   const me = currentProfile();
   const row = document.getElementById('login-row') as HTMLElement | null;
   if (!row) return;
+  if (!authStateChanged()) { row.innerHTML = ''; row.classList.remove('ready'); return; } // セッション判定期間は非表示のまま（ログインボタンのちらつき対策）
   if (me) {
     row.innerHTML = `<span class="login-name">👤 ${me.display_name}</span><button id="logout-btn-title" class="ghost-btn small">ログアウト</button>`;
     document.getElementById('logout-btn-title')?.addEventListener('click', async () => { await logout(); await applyAuthUI(); });

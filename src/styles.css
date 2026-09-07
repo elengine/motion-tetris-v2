@@ -501,3 +501,5 @@ html, body {
 
 /* オーバーレイ表示中はゲームキャンバスを非表示（回帰: スクロールバウンス時にゲーム画面が透ける） */
 body.overlay-open #game-canvas { visibility: hidden; }
+
+body.overlay-open #panels, body.overlay-open #touchpad, body.overlay-open #hud { visibility: hidden; }

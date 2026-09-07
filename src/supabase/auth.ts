@@ -5,6 +5,8 @@ import { supabase } from './client';
 export interface Profile { id: string; display_name: string; }
 
 let cachedProfile: Profile | null = null;
+let authReady = false; // 初回セッション復元が完了したか（ちらつき防止用）
+export function authStateChanged(): boolean { return authReady; }
 
 export function currentProfile(): Profile | null { return cachedProfile; }
 
@@ -13,6 +15,7 @@ export async function initAuth(onChange: (s: Session | null) => Promise<void>): 
   if (!sb) return;
   // 起動時の自動セッション復元 → プロフィール取得
   const { data } = await sb.auth.getSession();
+  authReady = true;
   await onChange(data.session);
   // 以降のログイン/ログアウトを随時反映
   sb.auth.onAuthStateChange((_evt, session) => { void onChange(session); });
