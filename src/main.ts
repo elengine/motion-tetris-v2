@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.4'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.3'}`;
   showTitle();
 }
 
@@ -373,8 +373,6 @@ canvas.addEventListener('touchstart', (e) => {
 canvas.addEventListener('touchend', (e) => {
   const t = e.changedTouches[0];
   const playState = running && !paused && game && game.state === GameState.Playing;
-  // 回帰: タップ/スワイプ後の合成 click が HUD ボタン(HUDは盤面上に重なることがある)を誤発火させていた → canvas起点は preventDefault で click 合成を阻止
-  if (playState) e.preventDefault();
   if (!playState) return; // 開始前/ポーズ中は盤面操作無効（回帰: スタート画面/ポーズ中に誤操作）
   // 素早い下フリック → ハードドロップ（回帰: 少し下スワイプでもハードドロップしていた → 時間160ms以内のフリックのみ許可）
   if (playState && game && t.clientY - sy0 > 44 && Date.now() - st0 < 160 && !movedHorizOnly) {
@@ -627,15 +625,6 @@ const pressPause = (e: Event): void => {
 };
 pauseBtn.addEventListener('pointerdown', pressPause);
 pauseBtn.addEventListener('click', pressPause);
-// 回帰: 中央スワイプの ghost click 対策（mute と同様）
-let pauseDown: { x: number; y: number } | null = null;
-pauseBtn.addEventListener('pointerdown', (e) => { pauseDown = { x: (e as PointerEvent).clientX, y: (e as PointerEvent).clientY }; });
-pauseBtn.addEventListener('click', (e) => {
-  const pe = e as PointerEvent;
-  if (pauseDown && Math.hypot(pe.clientX - pauseDown.x, pe.clientY - pauseDown.y) > 12) {
-    e.stopPropagation(); e.preventDefault();
-  }
-});
 let lastMutePress = 0;
 const pressMute = (e: Event): void => {
   e.preventDefault(); e.stopPropagation();
@@ -650,16 +639,6 @@ const pressMute = (e: Event): void => {
 };
 muteBtn.addEventListener('pointerdown', pressMute);
 muteBtn.addEventListener('click', pressMute);
-// 回帰: プレイ中に中央スワイプでサウンドトグルが発火 → swipe-end の ghost click が mute-btn に届くため、
-// pointerdown→click の間の移動が大きい場合はクリック無効にする
-muteBtn.addEventListener('click', (e) => {
-  const pe = e as PointerEvent;
-  if (muteDown && Math.hypot(pe.clientX - muteDown.x, pe.clientY - muteDown.y) > 12) {
-    e.stopPropagation(); e.preventDefault();
-  }
-});
-let muteDown: { x: number; y: number } | null = null;
-muteBtn.addEventListener('pointerdown', (e) => { muteDown = { x: (e as PointerEvent).clientX, y: (e as PointerEvent).clientY }; });
 // ミュート状態の復元（起動時に前回の設定を継続）
 sound.setMuted(localStorage.getItem('ntv2:muted') === '1');
 
