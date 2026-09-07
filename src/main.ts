@@ -17,6 +17,9 @@ declare const __APP_VERSION__: string | undefined;
 
 // ----- DOM -----
 document.getElementById('app');
+// 起動直後から HUD/パネルを隠す（wasmロード完了前の初期表示でHUDがちらつく対策）
+document.getElementById('hud')!.style.visibility = 'hidden';
+document.getElementById('panels')!.style.visibility = 'hidden';
 const hudScore = document.getElementById('hud-score')!;
 const hudLevel = document.getElementById('hud-level')!;
 const hudLines = document.getElementById('hud-lines')!;
@@ -66,9 +69,6 @@ async function main(): Promise<void> {
     window.visualViewport.addEventListener('scroll', layout);
   }
   layout();
-  // 開始前は HUD/パネルを隠す（タイトル画面のノイズ除去）
-  document.getElementById('hud')!.style.visibility = 'hidden';
-  document.getElementById('panels')!.style.visibility = 'hidden';
 
   let last = performance.now();
   const loop = (now: number) => {

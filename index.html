@@ -15,12 +15,14 @@
       rel="stylesheet"
     />
     <link rel="icon" href="./icons/icon-192.png" />
+    <!-- FOUC対策: JS/CSSモジュール読み込み完了前の初期フレームでHUDが露出するのを防ぐ（styles.css はJS importも維持） -->
+    <link rel="stylesheet" href="./src/styles.css" />
   </head>
   <body>
     <div id="app">
       <canvas id="game-canvas"></canvas>
 
-      <div id="hud" class="hud">
+      <div id="hud" class="hud" style="visibility:hidden">
         <div class="stat hud-mini"><span class="hud-label">SCORE</span><span id="hud-score" class="hud-value">0</span></div>
         <div class="stat hud-mini"><span class="hud-label">LEVEL</span><span id="hud-level" class="hud-value">1</span></div>
         <div class="stat hud-mini"><span class="hud-label">LINES</span><span id="hud-lines" class="hud-value">0</span></div>
@@ -32,7 +34,7 @@
         </div>
       </div>
 
-      <div id="panels">
+      <div id="panels" style="visibility:hidden">
         <aside class="glass-card side-panel">
           <h3 class="panel-title">NEXT</h3>
           <canvas id="next-canvas" width="120" height="192"></canvas>
