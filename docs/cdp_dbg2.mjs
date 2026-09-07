@@ -1,12 +1,13 @@
-
 import CDP from 'chrome-remote-interface';
-const client = await CDP({ port: 9222, target: 'page' });
-const { Runtime, Page } = client;
+const client = await CDP({ port: 9222 });
+const { Runtime, Page, Log } = client;
 try {
+  await Log.enable(); Log.entryAdded(e => console.log('LOG:', e.entry.text));
   await Page.enable();
-  await Page.navigate({ url: 'https://elengine.github.io/motion-tetris-v2/?nocache=' + Date.now() });
+  await Page.navigate({ url: 'http://localhost:5174/?v=' + Date.now() });
   await Page.loadEventFired();
-  await new Promise(r => setTimeout(r, 3500));
-  const d = await Runtime.evaluate({ expression: `JSON.stringify({hasDebug: !!window.__debug, hasGame: !!window.__game, href: location.href})`, returnByValue: true });
-  console.log(d.result.value);
-} finally { await client.close(); }
+  await new Promise(r => setTimeout(r, 2500));
+  const t = await Runtime.evaluate({ expression: `document.getElementById('ov-sub').textContent + ' | ' + document.getElementById('howto-link') + ' | ' + document.querySelectorAll('.mode-btn').length`, returnByValue: true });
+  console.log('RAW:', JSON.stringify(t));
+} catch(e) { console.log('ERR', e.message); }
+finally { await client.close(); }

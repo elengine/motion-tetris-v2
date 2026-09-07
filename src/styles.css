@@ -356,3 +356,59 @@ html, body {
 .ghost-btn:active { color: var(--text); border-color: rgba(0, 240, 255, 0.4); }
 
 #ov-action { margin-top: 26px; } /* 「もう一度遊ぶ」: スコア枠との間隔 */
+
+/* ---------- 遊び方画面 (回帰: スタート画面の操作説明を分離し洗練レイアウトに) ---------- */
+#howto-link {
+  display: block;
+  margin-top: 22px;
+  font-size: 14px;
+  color: #8fd8ff;
+  text-align: center;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+#howto-link:active { color: #fff; }
+
+.howto {
+  display: flex; flex-direction: column; gap: 14px;
+  width: 100%;
+  text-align: left;
+}
+.howto-card {
+  background: rgba(18, 26, 62, 0.55);
+  border: 1px solid rgba(120, 160, 255, 0.22);
+  border-radius: 14px;
+  padding: 14px 16px;
+  backdrop-filter: blur(6px);
+}
+.howto-card h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #9fd0ff;
+  letter-spacing: 0.05em;
+}
+.howto-card ul { margin: 0; padding: 0; list-style: none; }
+.howto-card li {
+  display: flex; align-items: baseline; gap: 8px;
+  font-size: 13.5px; line-height: 1.9; color: #cfe0ff;
+  border-bottom: 1px dashed rgba(120,160,255,0.12);
+  padding: 2px 0;
+}
+.howto-card li:last-child { border-bottom: none; }
+.howto-card li b { color: #7ff0ff; }
+.key {
+  display: inline-block; min-width: 24px;
+  text-align: center;
+  padding: 1px 7px;
+  font-size: 12px; font-family: var(--font-num, monospace);
+  color: #eaf4ff;
+  background: rgba(70, 100, 200, 0.3);
+  border: 1px solid rgba(150, 180, 255, 0.35);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+}
+
+/* 遊び方画面は縦長で大きめ表示 (Fold8展開も考慮) */
+@media (min-height: 640px) {
+  .howto-card li { font-size: 14px; }
+}

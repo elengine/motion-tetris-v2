@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.6.1'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.7.0'}`;
   showTitle();
 }
 
@@ -466,14 +466,57 @@ function drawFloatTexts(dt: number): void {
 }
 
 // ----- overlay -----
+// 遊び方描述ビュー (回帰: スタート画面からWasm/PC/スマホ説明を撤去し「遊び方」リンクへ分離)
+const HOWTO_HTML = `
+  <div class="howto">
+    <section class="howto-card">
+      <h3><span class="howto-ico">🖥</span> PC での操作</h3>
+      <ul>
+        <li><span class="key">←</span><span class="key">→</span> 移動</li>
+        <li><span class="key">↑</span> / <span class="key">Z</span> / <span class="key">X</span> 回転（左／右）</li>
+        <li><span class="key">↓</span> ソフトドロップ</li>
+        <li><span class="key">Space</span> ハードドロップ（即着地）</li>
+        <li><span class="key">C</span> ホールド（1回ずつ保持）</li>
+        <li><span class="key">P</span> / <span class="key">Esc</span> 一時停止</li>
+      </ul>
+    </section>
+    <section class="howto-card">
+      <h3><span class="howto-ico">📱</span> スマホでの操作</h3>
+      <ul>
+        <li>画面タップ または 回転ボタン → 回転</li>
+        <li>左右スワイプ → 移動</li>
+        <li>下フリック → ソフトドロップ</li>
+        <li>下スワイプ（素早く）→ ハードドロップ</li>
+        <li>下部ボタン → 移動／回転／ドロップ／ホールド</li>
+      </ul>
+    </section>
+    <section class="howto-card">
+      <h3><span class="howto-ico">🎮</span> モードとルール</h3>
+      <ul>
+        <li><b>マラソン</b>: 10ラインごとにレベルアップ。どこまで高得点を狙えるか</li>
+        <li><b>スプリント（40ライン）</b>: 40ライン消すまでのタイムを競う</li>
+        <li><b>ウルトラ（2分）</b>: 2分でどれだけスコアを稼げるか</li>
+      </ul>
+    </section>
+  </div>`;
+
 function showTitle(): void {
   document.getElementById('mode-buttons')!.style.display = '';
   backBtn.style.display = 'none';
   ovAction.style.display = 'none'; // タイトル画面では「はじめる」撤去（モードボタンが直接開始）（回帰: ボタン重複）
   (document.querySelector('.v1-link') as HTMLElement)!.style.display = ''; // v1リンクはタイトルのみ
-  showOverlay('NEON TETRIS', 'Wasm × ガイドライン完全準拠',
-    '<b>PC</b>: ←→ 移動 / ↑・Z・X 回転 / ↓ ソフト / Space ハード / C ホールド<br><b>スマホ</b>: 下部ボタン + スワイプ（盤面タップ=回転）',
-    'はじめる');
+  document.getElementById('howto-link')!.style.display = ''; // 遊び方リンク
+  showOverlay('NEON TETRIS', '', '', 'はじめる');
+}
+
+// 遊び方画面: PC/スマホ/モード説明 + スタート画面へ戻る
+function showHowto(): void {
+  document.getElementById('mode-buttons')!.style.display = 'none';
+  ovAction.style.display = 'none';
+  (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none';
+  document.getElementById('howto-link')!.style.display = 'none';
+  backBtn.style.display = '';
+  showOverlay('遊び方', '', HOWTO_HTML, '');
 }
 function showOverlay(title: string, sub: string, body: string, action: string): void {
   ovTitle.textContent = title;
@@ -481,7 +524,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
   ovSub.textContent = sub;
   ovBody.innerHTML = body;
   ovAction.textContent = action;
-  if (title !== 'NEON TETRIS') {
+  if (title !== 'NEON TETRIS' && title !== '遊び方') {
     document.getElementById('mode-buttons')!.style.display = 'none'; // 完了/オーバー画面はModeボタン非表示
     backBtn.style.display = '';
     ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
@@ -499,6 +542,12 @@ document.querySelectorAll('.mode-btn').forEach((b) => {
     sound.unlock();
     startGame(md);
   });
+});
+// 遊び方リンク → 遊び方画面
+document.getElementById('howto-link')!.addEventListener('click', (e) => {
+  e.preventDefault();
+  sound.unlock();
+  showHowto();
 });
 // スタート画面へ戻る: タイトルオーバーレイに戻す
 backBtn.addEventListener('click', () => {
