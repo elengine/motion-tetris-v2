@@ -423,3 +423,40 @@ html, body {
 @media (min-height: 640px) {
   .howto-card li { font-size: 14px; }
 }
+
+/* ---------- スタート画面サウンドトグル (HUDミニボタンと同デザイン) ---------- */
+#title-toggles { margin-bottom: 16px; display: flex; justify-content: center; }
+#title-sound-btn { pointer-events: auto; }
+
+/* ---------- 遊び方画面: 実物ボタン再現 + pause/sound共通説明カード ---------- */
+.howto-btn-row {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin: 6px 0 8px;
+}
+.howto-realbtn {
+  width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(20, 28, 68, 0.72);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  border-radius: 12px;
+  color: var(--cyan);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.18);
+}
+.howto-realbtn svg { width: 22px; height: 22px; }
+.howto-realbtn.muted { color: #ff9db2; border-color: rgba(255, 107, 125, 0.5); box-shadow: 0 0 12px rgba(255, 107, 125, 0.2); }
+.howto-realbtn .ic-alt { display: none; }
+.howto-realbtn.muted .ic-main { display: none; }
+.howto-realbtn.muted .ic-alt { display: block; }
+/* 操作ボタン (⟲⟳ ↓.stack) */
+.howto-opbtn {
+  min-width: 44px; height: 44px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 10px;
+  background: rgba(24, 34, 76, 0.85);
+  border: 1px solid rgba(120, 150, 255, 0.4);
+  border-bottom-width: 3px;
+  border-radius: 12px;
+  color: #dfe9ff; font-size: 18px; font-weight: 800;
+}
+
+.howto-note { margin: 6px 0 0; font-size: 11.5px; color: #7f92c8; }

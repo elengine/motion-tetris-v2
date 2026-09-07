@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.8.0'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.0'}`;
   showTitle();
 }
 
@@ -498,12 +498,38 @@ const HOWTO_HTML = `
       <h3><span class="howto-ico">📱</span> スマホでの操作</h3>
       <ul>
         <li>移動　　　　　　 画面を左右にスワイプ</li>
-        <li>左回転　　　　　 回転ボタン（⟲）</li>
-        <li>右回転　　　　　 画面タップ / 上スワイプ / 回転ボタン（⟳）</li>
+        <li>左回転　　　　　 <span class="howto-opbtn">⟲</span> ボタン</li>
+        <li>右回転　　　　　 画面タップ / 上スワイプ / <span class="howto-opbtn">⟳</span> ボタン</li>
         <li>ソフトドロップ　 画面をゆっくり下にドラッグ</li>
-        <li>ハードドロップ　 画面を素早く下にフリック</li>
-        <li>ホールド　　　　 下部の H ボタン</li>
+        <li>ハードドロップ　 画面を素早く下にフリック / <span class="howto-opbtn">⤓</span> ボタン</li>
+        <li>ホールド　　　　 <span class="howto-opbtn">H</span> ボタン</li>
       </ul>
+      <div class="howto-btn-row">
+        <span class="howto-realbtn" title="回転（左）">⟲</span>
+        <span class="howto-realbtn" title="回転（右）">⟳</span>
+        <span class="howto-realbtn" title="ソフトドロップ">↓</span>
+        <span class="howto-realbtn" title="ハードドロップ">⤓</span>
+        <span class="howto-realbtn" title="ホールド">H</span>
+      </div>
+      <p class="howto-note">※ 実際のゲーム画面の下部に表示されるボタンです。</p>
+    </section>
+    <section class="howto-card">
+      <h3><span class="howto-ico">⚙</span> 共通ボタン（画面上部）</h3>
+      <ul>
+        <li>一時停止 / 再開： <span class="key">‖</span>⇔<span class="key">▶</span>（ポーズ中は▶に変わる）</li>
+        <li>サウンド ON / OFF： <span class="key">🔊</span>⇔<span class="key">🔇</span>（OFF中は斜線アイコン）</li>
+      </ul>
+      <div class="howto-btn-row">
+        <span class="howto-realbtn" title="一時停止/再開">
+          <svg viewBox="0 0 24 24" class="ic ic-main"><rect x="6" y="5" width="4" height="14" rx="1.2" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.2" fill="currentColor"/></svg>
+          <svg viewBox="0 0 24 24" class="ic ic-alt"><path d="M8 5l11 7-11 7z" fill="currentColor"/></svg>
+        </span>
+        <span class="howto-realbtn" title="サウンドON/OFF">
+          <svg viewBox="0 0 24 24" class="ic ic-main"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17.5 8.5a5 5 0 010 7" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 24 24" class="ic ic-alt"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+      </div>
+      <p class="howto-note">※ PC・スマホ共通。ゲーム画面の上部にある2つのボタンです。</p>
     </section>
     <section class="howto-card">
       <h3><span class="howto-ico">🎮</span> モードとルール</h3>
@@ -591,14 +617,25 @@ const pressMute = (e: Event): void => {
   lastMutePress = now;
   sound.unlock();
   sound.setMuted(!sound.isMuted);
+  localStorage.setItem('ntv2:muted', sound.isMuted ? '1' : '0'); // 設定保存: 次回起動も継続
   muteBtn.classList.toggle('muted', sound.isMuted); muteBtn.classList.toggle('alt', sound.isMuted);
+  syncTitleSoundBtn();
 };
 muteBtn.addEventListener('pointerdown', pressMute);
 muteBtn.addEventListener('click', pressMute);
-// ミュート状態の復元
+// ミュート状態の復元（起動時に前回の設定を継続）
 sound.setMuted(localStorage.getItem('ntv2:muted') === '1');
-muteBtn.classList.toggle('muted', sound.isMuted); muteBtn.classList.toggle('alt', sound.isMuted);
-muteBtn.addEventListener('pointerdown', () => localStorage.setItem('ntv2:muted', sound.isMuted ? '1' : '0'));
+
+// ----- スタート画面サウンドON/OFFボタン（HUDボタンと同一状態を共有） -----
+const titleSoundBtn = document.getElementById('title-sound-btn') as HTMLButtonElement;
+function syncTitleSoundBtn(): void {
+  titleSoundBtn.classList.toggle('muted', sound.isMuted);
+  titleSoundBtn.classList.toggle('alt', sound.isMuted);
+  titleSoundBtn.setAttribute('aria-pressed', sound.isMuted ? 'true' : 'false');
+}
+titleSoundBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); pressMute(e); });
+titleSoundBtn.addEventListener('click', (e) => pressMute(e));
+syncTitleSoundBtn();
 
 void main();
 void COLS; void ROWS; void TOTAL_ROWS; void HIDDEN_ROWS; void cellToPx;
