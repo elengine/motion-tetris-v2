@@ -471,7 +471,8 @@ html, body {
 .howto-card li .howto-realbtn.sm { height: 26px; min-width: 26px; font-size: 14px; }
 
 /* ---------- ソーシャルランキング/ログイン (v2.0.0) ---------- */
-#login-row { margin-top: 22px; margin-bottom: 16px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; align-items: center; }
+#login-row { margin-top: 22px; margin-bottom: 16px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; align-items: center; min-height: 47px; /* ログイン状態判定期間も高さ確保（ちらつき防止） */ visibility: hidden; }
+#login-row.ready { visibility: visible; }
 #login-row + #howto-link { margin-top: 14px; } /* ログインボタンとあそびかたの誤タップ防止 */
 .login-btn { padding: 13px 30px; font-size: 16px; border-radius: 28px; }
 .login-name { font-size: 16px; color: #9fd0ff; }
@@ -497,3 +498,6 @@ html, body {
 .name-edit { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
 .name-input { background: rgba(16,22,56,0.8); border: 1px solid rgba(120,150,255,0.35); color: #eaf4ff; border-radius: 10px; padding: 8px 12px; font-size: 14px; width: min(60vw, 240px); }
 .name-btn { padding: 9px 18px; font-size: 13px; border-radius: 10px; margin: 0; }
+
+/* オーバーレイ表示中はゲームキャンバスを非表示（回帰: スクロールバウンス時にゲーム画面が透ける） */
+body.overlay-open #game-canvas { visibility: hidden; }

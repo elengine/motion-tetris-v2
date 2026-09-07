@@ -39,6 +39,8 @@ function listHtml(rows: ScoreRow[], myId: string | null, mode: Mode): string {
 }
 
 export async function showRankingView(backTo: () => void): Promise<void> {
+  document.body.classList.add('overlay-open');
+  (document.getElementById('ov-version') as HTMLElement).style.display = 'none'; // バージョンはスタート画面のみ
   const ovTitle = document.getElementById('ov-title')!;
   const ovBody = document.getElementById('ov-body')!;
   const backBtn = document.getElementById('back-to-title') as HTMLButtonElement;
@@ -70,6 +72,8 @@ export async function showRankingView(backTo: () => void): Promise<void> {
 }
 
 export async function showHistoryView(backTo: () => void): Promise<void> {
+  document.body.classList.add('overlay-open');
+  (document.getElementById('ov-version') as HTMLElement).style.display = 'none'; // バージョンはスタート画面のみ
   const ovTitle = document.getElementById('ov-title')!;
   const ovBody = document.getElementById('ov-body')!;
   const backBtn = document.getElementById('back-to-title') as HTMLButtonElement;

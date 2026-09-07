@@ -581,6 +581,7 @@ function showHowto(): void {
   showOverlay('あそびかた', '', HOWTO_HTML, '');
 }
 function showOverlay(title: string, sub: string, body: string, action: string): void {
+  document.body.classList.add('overlay-open'); // スクロールバウンス時のゲーム画面透け対策
   ovTitle.textContent = title;
   ovTitle.classList.remove('neon-title'); void ovTitle.offsetWidth; ovTitle.classList.add('neon-title');
   ovSub.textContent = sub;
@@ -598,7 +599,7 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
     }
   overlay.classList.remove('hidden');
 }
-function hideOverlay(): void { overlay.classList.add('hidden'); }
+function hideOverlay(): void { overlay.classList.add('hidden'); document.body.classList.remove('overlay-open'); }
 
 ovAction.addEventListener('click', () => {
   sound.unlock();
@@ -686,6 +687,7 @@ async function applyAuthUI(): Promise<void> {
     row.innerHTML = `<button id="login-btn-title" class="cta-btn login-btn">Google でログイン</button>`;
     document.getElementById('login-btn-title')?.addEventListener('click', () => { sound.unlock(); loginWithGoogle(); });
   }
+  row.classList.add('ready'); // 描画内容確定後に表示（初回のログインボタンちらつき対策）
 }
 
 /** ScoreRow 変換して投稿 */
