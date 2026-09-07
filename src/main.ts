@@ -558,7 +558,6 @@ const HOWTO_HTML = `
 function showTitle(): void {
   document.getElementById('title-toggles')!.style.display = ''; // サウンドボタンはスタート画面（あそびかた上）のみ
   document.getElementById('login-row')!.style.display = ''; // ログインエリア
-  document.getElementById('social-row')!.style.display = ''; // ランキングボタン
   void applyAuthUI();
   document.getElementById('mode-buttons')!.style.display = '';
   backBtn.style.display = 'none';
@@ -572,7 +571,6 @@ function showTitle(): void {
 function showHowto(): void {
   document.getElementById('title-toggles')!.style.display = 'none'; // あそびかた画面ではサウンドボタン撤去
   document.getElementById('login-row')!.style.display = 'none';
-  document.getElementById('social-row')!.style.display = 'none';
   requestAnimationFrame(() => { document.getElementById('overlay')!.scrollTop = 0; }); // 回帰: 前回のスクロール位置が残る（描画後にリセット）
   document.getElementById('hud')!.style.visibility = 'hidden'; // 回帰: あそびかた画面にサウンドボタン等を表示しない
   document.getElementById('mode-buttons')!.style.display = 'none';
@@ -594,9 +592,9 @@ function showOverlay(title: string, sub: string, body: string, action: string): 
     ovAction.style.display = ''; // 完了画面では「もう一度遊ぶ」ボタン有効
     (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none'; // 完了画面ではv1リンク撤去（回帰: 画面整理）
     document.getElementById('howto-link')!.style.display = 'none'; // 完了画面では「あそびかた」リンク非表示（スタート画面のみ設置）
+    document.getElementById('login-row')!.style.display = 'none'; // ログアウトボタンはスタート画面のみ（PAUSED/完了では非表示）
     document.getElementById('title-toggles')!.style.display = 'none'; // 完了/オーバー画面ではサウンドボタン撤去（スタート画面のみ設置）
-    document.getElementById('social-row')!.style.display = 'none'; // 完了画面ではランキング入口は置かない
-  }
+    }
   overlay.classList.remove('hidden');
 }
 function hideOverlay(): void { overlay.classList.add('hidden'); }
@@ -613,11 +611,6 @@ document.querySelectorAll('.mode-btn').forEach((b) => {
     sound.unlock();
     startGame(md);
   });
-});
-// ランキングリンク → ランキング表示（設計書 §3.2)
-document.getElementById('rank-link')!.addEventListener('click', () => {
-  sound.unlock();
-  void showRankingView(showTitle);
 });
 // あそびかたリンク（元のハンドラは下）
 document.getElementById('howto-link')!.addEventListener('click', (e) => {

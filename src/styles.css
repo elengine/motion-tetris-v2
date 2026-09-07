@@ -472,7 +472,7 @@ html, body {
 /* ---------- ソーシャルランキング/ログイン (v2.0.0) ---------- */
 #login-row { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; align-items: center; }
 .login-btn { padding: 10px 24px; font-size: 15px; border-radius: 24px; }
-.login-name { font-size: 13px; color: #9fd0ff; }
+.login-name { font-size: 16px; color: #9fd0ff; }
 .ghost-btn.small { padding: 7px 16px; font-size: 12px; border-radius: 18px; margin: 0; }
 #social-row { margin-top: 18px; display: flex; justify-content: center; }
 .rank-link-btn { padding: 12px 36px; font-size: 16px; }

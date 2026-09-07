@@ -1,5 +1,5 @@
 // ランキング/履歴/ログインUI — ネオンテーマ準拠のオーバーレイ描画（設計書 §3.2）
-import { logout, currentProfile, updateDisplayName } from '../supabase/auth';
+import { currentProfile, updateDisplayName } from '../supabase/auth';
 import { fetchRanking, fetchMyHistory, type ScoreRow, type Mode } from '../supabase/ranking';
 
 const MODE_LABEL: Record<Mode, string> = { marathon: 'マラソン', sprint: 'スプリント', ultra: 'ウルトラ' };
@@ -49,7 +49,6 @@ export async function showRankingView(backTo: () => void): Promise<void> {
   document.getElementById('howto-link')!.style.display = 'none';
   document.getElementById('mode-buttons')!.style.display = 'none';
   document.getElementById('login-row')!.style.display = 'none';
-  document.getElementById('social-row')!.style.display = 'none';
   backBtn.style.display = '';
   ovTitle.textContent = '🏆 ランキング';
   const tabs = (['marathon', 'sprint', 'ultra'] as Mode[]).map((mm) =>
@@ -79,14 +78,12 @@ export async function showHistoryView(backTo: () => void): Promise<void> {
   (document.querySelector('.v1-link') as HTMLElement)!.style.display = 'none';
   document.getElementById('mode-buttons')!.style.display = 'none';
   document.getElementById('login-row')!.style.display = 'none';
-  document.getElementById('social-row')!.style.display = 'none';
   backBtn.style.display = '';
   ovTitle.textContent = '📜 自分の履歴';
   const me = currentProfile();
   const nameForm = `<div class="name-edit"><input id="name-input" class="name-input" maxlength="20" placeholder="名前を入力（20文字まで）" value="${esc(me?.display_name ?? '')}"><button id="name-save" class="cta-btn name-btn">名前を変更</button></div>`;
   ovBody.innerHTML = `${nameForm}<div id="hist-body" class="rank-body">読み込み中…</div>
-    <button id="to-ranking" class="ghost-btn">🏆 ランキングへ</button>
-    ${me ? '<button id="logout-btn2" class="ghost-btn">ログアウト</button>' : ''}`;
+    <button id="to-ranking" class="ghost-btn">🏆 ランキング</button>`;
   const rows = await fetchMyHistory(30);
   const hist = document.getElementById('hist-body');
   if (hist) hist.innerHTML = rows.length
@@ -99,6 +96,4 @@ export async function showHistoryView(backTo: () => void): Promise<void> {
     (document.getElementById('name-save') as HTMLButtonElement)!.textContent = ok ? '変更しました ✓' : '失敗しました';
   });
   document.getElementById('to-ranking')!.addEventListener('click', () => { void showRankingView(backTo); });
-  const lb = document.getElementById('logout-btn2');
-  if (lb) lb.addEventListener('click', async () => { await logout(); backTo(); });
 }
