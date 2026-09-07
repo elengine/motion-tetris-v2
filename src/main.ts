@@ -77,7 +77,7 @@ async function main(): Promise<void> {
 
   // バージョン表示（セマンティックバージョン、デプロイ毎に更新）
   const ver = document.getElementById('ov-version')!;
-  ver.textContent = `v${__APP_VERSION__ ?? '1.9.3'}`;
+  ver.textContent = `v${__APP_VERSION__ ?? '1.9.4'}`;
   showTitle();
 }
 
@@ -256,6 +256,7 @@ function gameOver(): void {
 function startGame(mode: GameMode): void {
   if (!game) return;
   lastMode = mode;
+  document.getElementById('title-toggles')!.style.display = 'none'; // 回帰: プレイ中も見えないサウンドボタンが pointer-events:auto でタップを拾い、盤面中央タップでサウンドトグルが発動していた
   document.getElementById('hud')!.style.visibility = 'visible';
   document.getElementById('panels')!.style.visibility = 'visible';
   game.startGame(mode, BigInt(Date.now() & 0x7fffffff));
